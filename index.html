@@ -34,7 +34,7 @@
             --btn-custom-color: #0077ff;
         }
 
-        :root:not([data-theme="light"]) {
+        [data-theme="oled"] {
             --bg-color: #000000;
             --card-bg: #090d0a;
             --text-color: #f8fafc;
@@ -188,6 +188,12 @@
             width: 100px; height: 100px; margin: 0 auto 10px auto; border-radius: 50%;
             border: 3px solid #f97316; overflow: hidden; display: flex; justify-content: center; align-items: center;
             background: #111; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pet-img-box.dragover {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            transform: scale(1.05);
         }
         .pet-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -217,7 +223,7 @@
         <div id="app-screen" class="hidden">
             <div class="top-controls">
                 <button class="icon-btn custom-btn" onclick="openShop()">🐊 Pet Shop Cá Sấu</button>
-                <button class="icon-btn custom-btn" onclick="toggleTheme()">☀️ / 🌙 Sáng-Tối</button>
+                <button class="icon-btn custom-btn" onclick="cycleTheme()">☀️ / 🌙 Đổi Giao Diện</button>
             </div>
 
             <div class="header">
@@ -247,12 +253,18 @@
             </div>
             <ul id="task-list" class="task-list"></ul>
             
-            <!-- Debug Panel & Tùy chỉnh màu nút -->
+            <!-- Debug Panel & Tùy chỉnh màu nút / màu chữ -->
             <div class="debug-panel">
-                <h4>🎨 Tùy chỉnh màu nút & Debug</h4>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px;">
-                    <span>Màu nút:</span>
-                    <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
+                <h4>🎨 Tùy chỉnh Giao diện & Màu chữ</h4>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px;">
+                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <span>Màu nút:</span>
+                        <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <span>Màu chữ:</span>
+                        <input type="color" id="text-color-picker" value="#f8fafc" onchange="changeTextColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
+                    </label>
                     <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
                         <input type="checkbox" id="rgb-btn-toggle" onclick="toggleRGBButtons(this)"> 🌈 Nút RGB
                     </label>
@@ -269,12 +281,12 @@
     <!-- Modal Pet Shop & Thức Ăn -->
     <div id="shop-modal" class="modal hidden">
         <div class="modal-content">
-            <!-- Thả ảnh .png cho Pet -->
-            <div class="pet-img-box" onclick="document.getElementById('pet-file-input').click()" title="Bấm vào để đổi ảnh PNG cho Pet">
+            <!-- Thả ảnh .png hoặc click để chọn cho Pet -->
+            <div class="pet-img-box" id="drop-zone" onclick="document.getElementById('pet-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" title="Kéo thả file ảnh .png vào đây hoặc bấm để chọn">
                 <img id="pet-avatar-img" src="https://i.imgur.com/8Qz462Y.png" alt="Pet Cá Sấu" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616408.png'">
             </div>
             <input type="file" id="pet-file-input" accept=".png, image/png" style="display: none;" onchange="handlePetImageUpload(event)">
-            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Bấm vào ảnh để tải lên định dạng .png)</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Kéo thả ảnh .png vào khung hoặc bấm vào ảnh để tải lên)</div>
 
             <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~ Mua thức ăn bồi bổ cho tôi mau lên!"</div>
 
@@ -301,10 +313,11 @@
     <script>
         const CORRECT_PASS = "1234";
 
-        let appData = JSON.parse(localStorage.getItem('my_daily_app_v3')) || {
+        let appData = JSON.parse(localStorage.getItem('my_daily_app_v4')) || {
             coins: 0,
             streak: 1,
             theme: 'dark',
+            customTextColor: '',
             flameSkinActive: false,
             rgbSkinActive: false,
             customBtnColor: '#38bdf8',
@@ -330,6 +343,18 @@
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Hàm rung thiết bị (Hỗ trợ điện thoại Android/iOS qua API chuẩn)
+        function triggerVibration(pattern = 40) {
+            if ("vibrate" in navigator) {
+                try {
+                    navigator.vibrate(pattern);
+                } catch (e) {
+                    // Bỏ qua nếu trình duyệt chặn
+                }
+            }
+        }
+
         function playSound(type) {
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const osc = audioCtx.createOscillator();
@@ -357,6 +382,14 @@
                 gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'delete') {
+                // Âm thanh trầm xuống khi xóa
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
             } else if (type === 'error') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, audioCtx.currentTime);
@@ -367,12 +400,14 @@
         }
 
         function checkPassword() {
+            triggerVibration(50);
             const val = document.getElementById('pass-input').value;
             if(val === CORRECT_PASS) {
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 initApp();
             } else {
+                playSound('error');
                 document.getElementById('error-msg').innerText = "Sai mật khẩu! (1234)";
             }
         }
@@ -381,12 +416,16 @@
             checkDailyReset();
             applyTheme();
             applyButtonCustomization();
+            applyTextCustomization();
             renderUI();
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
         }
 
-        function toggleTheme() {
-            appData.theme = appData.theme === 'dark' ? 'light' : 'dark';
+        function cycleTheme() {
+            triggerVibration(30);
+            if (appData.theme === 'dark') appData.theme = 'light';
+            else if (appData.theme === 'light') appData.theme = 'oled';
+            else appData.theme = 'dark';
             saveData();
             applyTheme();
         }
@@ -394,8 +433,13 @@
         function applyTheme() {
             const root = document.getElementById('body-root');
             const container = document.getElementById('main-container');
-            if (appData.theme === 'light') root.setAttribute('data-theme', 'light');
-            else root.removeAttribute('data-theme');
+            
+            root.removeAttribute('data-theme');
+            if (appData.theme === 'light') {
+                root.setAttribute('data-theme', 'light');
+            } else if (appData.theme === 'oled') {
+                root.setAttribute('data-theme', 'oled');
+            }
 
             container.classList.remove('flame-skin', 'rgb-skin');
             if (appData.rgbSkinActive) container.classList.add('rgb-skin');
@@ -410,7 +454,14 @@
             applyButtonCustomization();
         }
 
+        function changeTextColor(color) {
+            appData.customTextColor = color;
+            saveData();
+            applyTextCustomization();
+        }
+
         function toggleRGBButtons(checkbox) {
+            triggerVibration(30);
             appData.rgbButtonsActive = checkbox.checked;
             saveData();
             applyButtonCustomization();
@@ -418,8 +469,11 @@
 
         function applyButtonCustomization() {
             document.documentElement.style.setProperty('--btn-custom-color', appData.customBtnColor);
-            document.getElementById('btn-color-picker').value = appData.customBtnColor;
-            document.getElementById('rgb-btn-toggle').checked = appData.rgbButtonsActive;
+            const colorPicker = document.getElementById('btn-color-picker');
+            if(colorPicker) colorPicker.value = appData.customBtnColor;
+
+            const rgbToggle = document.getElementById('rgb-btn-toggle');
+            if(rgbToggle) rgbToggle.checked = appData.rgbButtonsActive;
 
             const buttons = document.querySelectorAll('.custom-btn');
             buttons.forEach(btn => {
@@ -428,11 +482,48 @@
             });
         }
 
+        function applyTextCustomization() {
+            const bodyRoot = document.getElementById('body-root');
+            const textColorPicker = document.getElementById('text-color-picker');
+            if(textColorPicker && appData.customTextColor) {
+                textColorPicker.value = appData.customTextColor;
+                bodyRoot.style.color = appData.customTextColor;
+            } else if(!appData.customTextColor) {
+                bodyRoot.style.color = '';
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processImageFile(files[0]);
+            }
+        }
+
         function handlePetImageUpload(event) {
             const file = event.target.files[0];
-            if (!file) return;
+            if (file) {
+                processImageFile(file);
+            }
+        }
+
+        function processImageFile(file) {
             if (file.type !== "image/png") {
-                alert("⛔ Vui lòng chỉ chọn định dạng file .png!");
+                triggerVibration([50, 50, 50]);
+                playSound('error');
+                alert("⛔ Vui lòng chỉ tải lên định dạng file .png!");
                 return;
             }
             const reader = new FileReader();
@@ -440,6 +531,8 @@
                 appData.petCustomImage = e.target.result;
                 saveData();
                 updatePetDisplay();
+                triggerVibration(60);
+                playSound('buy');
                 alert("✨ Đã cập nhật ảnh Pet .png thành công!");
             };
             reader.readAsDataURL(file);
@@ -465,6 +558,7 @@
             if (appData.petXp >= maxXP) {
                 appData.petXp -= maxXP;
                 appData.petLevel++;
+                triggerVibration([100, 50, 100]);
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
                 alert(`🎉 Chúc mừng Pet đã thăng lên Lv.${appData.petLevel}! Tăng mạnh % điểm thưởng nhiệm vụ.`);
             }
@@ -482,7 +576,7 @@
         }
 
         function saveData() {
-            localStorage.setItem('my_daily_app_v3', JSON.stringify(appData));
+            localStorage.setItem('my_daily_app_v4', JSON.stringify(appData));
         }
 
         function renderUI() {
@@ -491,6 +585,7 @@
             document.getElementById('task-count-label').innerText = `${appData.tasks.length}/8`;
             applyTheme();
             applyButtonCustomization();
+            applyTextCustomization();
 
             const taskUl = document.getElementById('task-list');
             taskUl.innerHTML = '';
@@ -519,6 +614,7 @@
                 const now = new Date();
                 const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
                 if (currentTimeStr < task.timeUnlock) {
+                    triggerVibration([50, 50, 50]);
                     playSound('error');
                     alert(`⛔ Chưa đến giờ! Mở khóa lúc ${task.timeUnlock}.`);
                     checkbox.checked = false;
@@ -535,11 +631,13 @@
 
                 if (task.completed) {
                     appData.coins += Math.round(earnedPoints);
+                    triggerVibration(40);
                     playSound('complete');
                     confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
                 } else {
                     appData.coins -= Math.round(earnedPoints);
                     if (appData.coins < 0) appData.coins = 0;
+                    triggerVibration(20);
                 }
                 saveData();
                 renderUI();
@@ -548,6 +646,8 @@
 
         function addNewTask() {
             if (appData.tasks.length >= 8) {
+                triggerVibration(50);
+                playSound('error');
                 alert("Tối đa 8 nhiệm vụ!");
                 return;
             }
@@ -556,6 +656,8 @@
             const text = input.value.trim();
             if (!text) return;
 
+            triggerVibration(30);
+            playSound('bell');
             appData.tasks.push({
                 id: Date.now(), text: text, points: 10, timeUnlock: timeInput.value || "00:00", completed: false
             });
@@ -565,12 +667,15 @@
         }
 
         function deleteTask(id) {
+            triggerVibration([40, 40]);
+            playSound('delete');
             appData.tasks = appData.tasks.filter(t => t.id !== id);
             saveData();
             renderUI();
         }
 
         function openShop() {
+            triggerVibration(30);
             playSound('bell');
             updatePetDisplay();
 
@@ -592,7 +697,10 @@
             document.getElementById('shop-modal').classList.remove('hidden');
         }
 
-        function closeShop() { document.getElementById('shop-modal').classList.add('hidden'); }
+        function closeShop() { 
+            triggerVibration(20);
+            document.getElementById('shop-modal').classList.add('hidden'); 
+        }
 
         function buyItem(id) {
             const item = appData.shop.find(s => s.id === id);
@@ -600,6 +708,7 @@
 
             if (appData.coins >= item.cost) {
                 appData.coins -= item.cost;
+                triggerVibration(50);
                 playSound('buy');
 
                 if (item.type === 'food') {
@@ -621,24 +730,29 @@
                 renderUI();
                 openShop();
             } else {
+                triggerVibration([50, 50, 50]);
                 playSound('error');
                 alert("❌ Bạn không đủ xu để mua món này!");
             }
         }
 
         function deleteShopItem(id) {
+            triggerVibration([40, 40]);
+            playSound('delete');
             appData.shop = appData.shop.filter(s => s.id !== id);
             saveData();
             openShop();
         }
 
         function debugAddCoins(amount) {
+            triggerVibration(30);
             appData.coins += amount;
             saveData();
             renderUI();
         }
 
         function debugResetTasks() {
+            triggerVibration(30);
             appData.tasks.forEach(t => t.completed = false);
             saveData();
             renderUI();
@@ -646,7 +760,9 @@
 
         function resetData() {
             if(confirm("Xóa sạch dữ liệu?")) {
-                localStorage.removeItem('my_daily_app_v3');
+                triggerVibration([80, 80]);
+                playSound('delete');
+                localStorage.removeItem('my_daily_app_v4');
                 location.reload();
             }
         }
