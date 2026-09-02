@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhiệm vụ hàng ngày & Cửa hàng Cá Sấu</title>
+    <title>Nhiệm vụ hàng ngày & Pet Shop Cá Sấu</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -17,6 +17,7 @@
             --item-bg: rgba(255, 255, 255, 0.03);
             --neon-glow: 0 0 15px rgba(56, 189, 248, 0.5);
             --border-neon: 2px solid #38bdf8;
+            --btn-custom-color: #38bdf8;
         }
 
         [data-theme="light"] {
@@ -30,6 +31,7 @@
             --item-bg: rgba(0, 0, 0, 0.02);
             --neon-glow: 0 0 20px rgba(0, 119, 255, 0.6);
             --border-neon: 2px solid #0077ff;
+            --btn-custom-color: #0077ff;
         }
 
         :root:not([data-theme="light"]) {
@@ -41,26 +43,44 @@
             --border-color: #14532d;
             --neon-glow: 0 0 20px rgba(34, 197, 94, 0.7);
             --border-neon: 2px solid #22c55e;
+            --btn-custom-color: #22c55e;
         }
 
-        /* Hiệu ứng Skin Viền Lửa Thường */
         .container.flame-skin {
             border: 2px solid #f97316 !important;
             box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), inset 0 0 10px rgba(249, 115, 22, 0.5) !important;
         }
 
-        /* Hiệu ứng Skin RGB Đổi Màu Liên Tục (Siêu Cháy) */
         @keyframes rgbCycle {
-            0% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
-            20% { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
-            40% { border-color: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); }
-            60% { border-color: #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.8); }
-            80% { border-color: #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.8); }
-            100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
+            0% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), inset 0 0 12px rgba(239, 68, 68, 0.6); }
+            20% { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(245, 158, 11, 0.6); }
+            40% { border-color: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.9), inset 0 0 12px rgba(34, 197, 94, 0.6); }
+            60% { border-color: #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.9), inset 0 0 12px rgba(56, 189, 248, 0.6); }
+            80% { border-color: #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.9), inset 0 0 12px rgba(168, 85, 247, 0.6); }
+            100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), inset 0 0 12px rgba(239, 68, 68, 0.6); }
         }
 
         .container.rgb-skin {
-            animation: rgbCycle 4s linear infinite !important;
+            animation: rgbCycle 3s linear infinite !important;
+        }
+
+        @keyframes rgbButtonCycle {
+            0% { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+            25% { background-color: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+            50% { background-color: #22c55e; box-shadow: 0 0 10px #22c55e; }
+            75% { background-color: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+            100% { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        }
+
+        .custom-btn {
+            background-color: var(--btn-custom-color) !important;
+            box-shadow: 0 0 10px var(--btn-custom-color) !important;
+            color: #ffffff !important;
+            transition: all 0.2s;
+        }
+
+        .custom-btn.rgb-buttons {
+            animation: rgbButtonCycle 3s linear infinite !important;
         }
 
         body {
@@ -73,7 +93,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -85,62 +104,23 @@
             border: var(--border-neon);
             box-shadow: var(--neon-glow);
             box-sizing: border-box;
-            transition: all 0.3s ease;
         }
 
-        #lock-screen {
-            text-align: center;
-        }
-
+        #lock-screen { text-align: center; }
         #lock-screen input {
-            width: 80%;
-            padding: 12px;
-            font-size: 18px;
-            text-align: center;
-            border-radius: 8px;
-            border: var(--border-neon);
-            background: var(--bg-color);
-            color: var(--text-color);
-            margin-bottom: 15px;
+            width: 80%; padding: 12px; font-size: 18px; text-align: center;
+            border-radius: 8px; border: var(--border-neon); background: var(--bg-color); color: var(--text-color); margin-bottom: 15px;
         }
 
-        button {
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            box-shadow: 0 0 8px var(--accent-color);
-        }
-
-        button:hover {
-            background-color: var(--accent-hover);
-        }
+        button { border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
         }
 
-        .stats {
-            display: flex;
-            gap: 15px;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .fire-streak {
-            color: #f97316;
-            animation: burn 1.5s infinite alternate;
-        }
+        .stats { display: flex; gap: 15px; font-size: 15px; font-weight: bold; }
+        .fire-streak { color: #f97316; animation: burn 1.5s infinite alternate; }
 
         @keyframes burn {
             0% { transform: scale(1); text-shadow: 0 0 5px #f97316; }
@@ -154,206 +134,70 @@
             75% { transform: translateX(-4px); }
             100% { transform: translateX(0); }
         }
-
-        @keyframes errorGlow {
-            0% { border-color: var(--danger-color); box-shadow: 0 0 10px var(--danger-color); }
-            100% { border-color: var(--border-color); box-shadow: none; }
-        }
-
-        .shake-anim {
-            animation: shake 0.3s ease-in-out;
-        }
-
-        .error-border {
-            animation: errorGlow 0.6s ease-in-out;
-        }
+        .shake-anim { animation: shake 0.3s ease-in-out; }
 
         .section-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: var(--accent-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-shadow: 0 0 8px var(--accent-color);
+            font-size: 18px; margin-bottom: 10px; color: var(--accent-color);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        .task-list, .shop-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-        }
-
+        .task-list, .shop-list { list-style: none; padding: 0; margin: 0 0 20px 0; }
         .task-item, .shop-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--item-bg);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--item-bg); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color);
         }
 
-        .task-item.completed span.task-text {
-            text-decoration: line-through;
-            color: #94a3b8;
-        }
+        .task-item.completed span.task-text { text-decoration: line-through; color: #94a3b8; }
+        .task-left { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+        .task-main { display: flex; align-items: center; gap: 10px; }
+        .task-time-label { font-size: 11px; color: var(--accent-color); margin-left: 24px; }
 
-        .task-left {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            overflow: hidden;
-        }
-
-        .task-main {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .task-time-label {
-            font-size: 11px;
-            color: var(--accent-color);
-            margin-left: 24px;
-        }
-
-        .delete-btn {
-            background: transparent;
-            color: var(--danger-color);
-            padding: 4px 8px;
-            font-size: 14px;
-            box-shadow: none;
-        }
-        .delete-btn:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
+        .delete-btn { background: transparent !important; color: var(--danger-color); padding: 4px 8px; font-size: 14px; box-shadow: none !important; }
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
         .add-task-box {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: var(--item-bg);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
+            background: var(--item-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);
         }
-
-        .add-task-row {
-            display: flex;
-            gap: 8px;
-        }
-
+        .add-task-row { display: flex; gap: 8px; }
         .add-task-box input, .add-task-box select {
-            flex: 1;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
+            flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);
         }
 
-        .top-controls {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .icon-btn {
-            background: transparent;
-            border: var(--border-neon);
-            color: var(--text-color);
-            padding: 5px 10px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 0 5px var(--accent-color);
-        }
+        .top-controls { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .icon-btn { border: var(--border-neon); color: var(--text-color); padding: 6px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; }
 
         .debug-panel {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px dashed var(--accent-color);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 12px;
+            background: rgba(0, 0, 0, 0.2); border: 1px dashed var(--accent-color);
+            padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 12px;
         }
+        .debug-panel h4 { margin: 0 0 8px 0; color: var(--accent-color); }
+        .debug-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+        .debug-buttons button { font-size: 11px; padding: 5px 8px; }
 
-        .debug-panel h4 {
-            margin: 0 0 8px 0;
-            color: var(--accent-color);
-        }
-
-        .debug-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .debug-buttons button {
-            font-size: 11px;
-            padding: 5px 8px;
-        }
-
-        /* Modal Shop Cá Sấu */
         .modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
-
         .modal-content {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 420px;
-            padding: 24px;
-            border-radius: 16px;
-            border: var(--border-neon);
-            box-shadow: var(--neon-glow);
-            text-align: center;
-            position: relative;
+            background: var(--card-bg); width: 90%; max-width: 420px; padding: 24px;
+            border-radius: 16px; border: var(--border-neon); box-shadow: var(--neon-glow); text-align: center; position: relative; max-height: 90vh; overflow-y: auto;
         }
 
-        .shopkeeper-img {
-            width: 110px;
-            height: 110px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 3px solid #f97316;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        .pet-img-box {
+            width: 100px; height: 100px; margin: 0 auto 10px auto; border-radius: 50%;
+            border: 3px solid #f97316; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            background: #111; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); cursor: pointer;
         }
+        .pet-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
         .dialogue-box {
-            background: var(--item-bg);
-            border: 1px solid var(--border-color);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-style: italic;
-            font-weight: bold;
-            color: #f59e0b;
-            margin-bottom: 15px;
-            min-height: 24px;
+            background: var(--item-bg); border: 1px solid var(--border-color); padding: 8px 12px;
+            border-radius: 10px; font-style: italic; font-weight: bold; color: #f59e0b; margin-bottom: 12px; font-size: 13px;
         }
 
-        .close-shop-btn {
-            background: var(--danger-color);
-            margin-top: 15px;
-            width: 100%;
-            box-shadow: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        .close-shop-btn { background: var(--danger-color) !important; color: white; margin-top: 15px; width: 100%; box-shadow: none !important; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body id="body-root">
@@ -362,18 +206,18 @@
         <!-- Khung Nhập Mật Khẩu -->
         <div id="lock-screen">
             <h2>Mật khẩu truy cập</h2>
-            <p style="color: #94a3b8; font-size: 14px;">Nhập mã bảo mật để vào ứng dụng</p>
-            <input type="password" id="pass-input" placeholder="Nhập mật khẩu (Mặc định: 1234)">
+            <p style="color: #94a3b8; font-size: 14px;">Mặc định: 1234</p>
+            <input type="password" id="pass-input" placeholder="Nhập mật khẩu...">
             <br>
-            <button onclick="checkPassword()">Truy cập</button>
+            <button class="custom-btn" onclick="checkPassword()">Truy cập</button>
             <p id="error-msg" style="color: var(--danger-color); margin-top: 10px;"></p>
         </div>
 
         <!-- Khung Ứng Dụng Chính -->
         <div id="app-screen" class="hidden">
             <div class="top-controls">
-                <button class="icon-btn" onclick="openShop()">🐊 Mở Cửa Hàng</button>
-                <button class="icon-btn" onclick="toggleTheme()">☀️ / 🌙 Sáng-Tối</button>
+                <button class="icon-btn custom-btn" onclick="openShop()">🐊 Pet Shop Cá Sấu</button>
+                <button class="icon-btn custom-btn" onclick="toggleTheme()">☀️ / 🌙 Sáng-Tối</button>
             </div>
 
             <div class="header">
@@ -387,14 +231,14 @@
                 </div>
             </div>
 
-            <!-- Thêm Nhiệm Vụ Mới -->
+            <!-- Thêm Nhiệm Vụ -->
             <div class="add-task-box">
                 <div style="font-size: 13px; font-weight: bold; color: var(--accent-color);">Thêm nhiệm vụ mới (Tối đa 8)</div>
                 <div class="add-task-row">
                     <input type="text" id="new-task-text" placeholder="Tên nhiệm vụ...">
-                    <input type="time" id="new-task-time" title="Giờ mở khóa nhiệm vụ">
+                    <input type="time" id="new-task-time">
                 </div>
-                <button onclick="addNewTask()">Thêm Nhiệm Vụ</button>
+                <button class="custom-btn" onclick="addNewTask()">Thêm Nhiệm Vụ</button>
             </div>
 
             <div class="section-title">
@@ -403,31 +247,51 @@
             </div>
             <ul id="task-list" class="task-list"></ul>
             
-            <!-- DEBUG MENU & TÙY CHỈNH ĐỒ TRONG SHOP -->
+            <!-- Debug Panel & Tùy chỉnh màu nút -->
             <div class="debug-panel">
-                <h4>🛠️ Debug & Quản Lý Shop</h4>
-                <div class="debug-buttons" style="margin-bottom: 8px;">
-                    <button onclick="debugAddCoins(100)">+100 Xu</button>
-                    <button onclick="debugUnlockAllTime()">Bỏ qua giờ (Unlock)</button>
-                    <button onclick="debugResetTasks()">Reset Trạng Thái NV</button>
-                    <button onclick="resetData()" style="background: var(--danger-color);">Xóa dữ liệu</button>
+                <h4>🎨 Tùy chỉnh màu nút & Debug</h4>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px;">
+                    <span>Màu nút:</span>
+                    <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
+                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="checkbox" id="rgb-btn-toggle" onclick="toggleRGBButtons(this)"> 🌈 Nút RGB
+                    </label>
                 </div>
-                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                    <input type="text" id="shop-item-name" placeholder="Tên món đồ mới..." style="flex:2; padding:4px; font-size:11px; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
-                    <input type="number" id="shop-item-cost" placeholder="Giá xu" style="flex:1; padding:4px; font-size:11px; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
-                    <button onclick="addNewShopItem()" style="font-size:11px; padding:4px 8px;">Thêm vào Shop</button>
+                <div class="debug-buttons">
+                    <button class="custom-btn" onclick="debugAddCoins(100)">+100 Xu</button>
+                    <button class="custom-btn" onclick="debugResetTasks()">Reset NV</button>
+                    <button class="delete-btn" onclick="resetData()" style="background:var(--danger-color); color:white; padding:5px 8px;">Xóa dữ liệu</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Cửa Hàng Cá Sấu -->
+    <!-- Modal Pet Shop & Thức Ăn -->
     <div id="shop-modal" class="modal hidden">
         <div class="modal-content">
-            <img src="https://m.media-amazon.com/images/I/61y8B3q93zL._AC_UF894,1000_QL80_.jpg" id="shopkeeper-img-tag" alt="Chủ Shop Cá Sấu" class="shopkeeper-img">
-            <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~"</div>
+            <!-- Thả ảnh .png cho Pet -->
+            <div class="pet-img-box" onclick="document.getElementById('pet-file-input').click()" title="Bấm vào để đổi ảnh PNG cho Pet">
+                <img id="pet-avatar-img" src="https://i.imgur.com/8Qz462Y.png" alt="Pet Cá Sấu" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616408.png'">
+            </div>
+            <input type="file" id="pet-file-input" accept=".png, image/png" style="display: none;" onchange="handlePetImageUpload(event)">
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Bấm vào ảnh để tải lên định dạng .png)</div>
 
-            <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">🛍️ Cửa Hàng Đổi Thưởng</div>
+            <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~ Mua thức ăn bồi bổ cho tôi mau lên!"</div>
+
+            <!-- Thống kê Cấp độ & Thanh Kinh Nghiệm Pet -->
+            <div style="background: var(--item-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>🐾 Cấp độ Pet: <b id="pet-level-text" style="color: var(--accent-color);">Lv.1</b></span>
+                    <span>⚡ Buff: <b id="pet-buff-text" style="color: #22c55e;">+10% xu</b></span>
+                </div>
+                <!-- Thanh tiến trình kinh nghiệm (XP) -->
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; height: 10px; overflow: hidden; position: relative;">
+                    <div id="pet-xp-bar" style="background: #22c55e; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; text-align: right;" id="pet-xp-text">XP: 0 / 100</div>
+            </div>
+
+            <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">🛍️ Cửa Hàng Thức Ăn & Trang Bị</div>
             <ul id="shop-list" class="shop-list" style="max-height: 180px; overflow-y: auto;"></ul>
 
             <button class="close-shop-btn" onclick="closeShop()">Đóng Cửa Hàng</button>
@@ -437,12 +301,17 @@
     <script>
         const CORRECT_PASS = "1234";
 
-        let appData = JSON.parse(localStorage.getItem('my_daily_app')) || {
+        let appData = JSON.parse(localStorage.getItem('my_daily_app_v3')) || {
             coins: 0,
             streak: 1,
             theme: 'dark',
             flameSkinActive: false,
             rgbSkinActive: false,
+            customBtnColor: '#38bdf8',
+            rgbButtonsActive: false,
+            petLevel: 1,
+            petXp: 0,
+            petCustomImage: '',
             lastDate: "",
             tasks: [
                 { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, timeUnlock: "00:00", completed: false },
@@ -451,16 +320,16 @@
                 { id: 4, text: "Tập thể dục 15 phút", points: 10, timeUnlock: "00:00", completed: false }
             ],
             shop: [
-                { id: 1, name: "🎮 30 phút chơi Roblox / Minecraft", cost: 30, type: 'reward' },
-                { id: 2, name: "🎬 Xem phim / Giải trí 1 tập", cost: 20, type: 'reward' },
-                { id: 3, name: "☕ Nghỉ ngơi thư giãn 15 phút", cost: 10, type: 'reward' },
-                { id: 4, name: "🔥 Mở khóa Skin Viền Lửa", cost: 60, type: 'flame' },
-                { id: 5, name: "✨ Mở khóa Skin RGB Đổi Màu Siêu Cháy", cost: 100, type: 'rgb' }
+                { id: 1, name: "🎮 30 phút chơi game", cost: 30, type: 'reward' },
+                { id: 2, name: "🍖 Thức Ăn Thường (Cấp 1 - +30 XP)", cost: 15, type: 'food', xp: 30 },
+                { id: 3, name: "🥩 Thức Ăn Cao Cấp (Cấp 2 - +80 XP)", cost: 35, type: 'food', xp: 80 },
+                { id: 4, name: "👑 Thức Ăn Siêu Cấp (Cấp 3 - +200 XP)", cost: 75, type: 'food', xp: 200 },
+                { id: 5, name: "🔥 Mở khóa Skin Viền Lửa", cost: 60, type: 'flame' },
+                { id: 6, name: "✨ Mở khóa Skin RGB Khung", cost: 100, type: 'rgb' }
             ]
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         function playSound(type) {
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const osc = audioCtx.createOscillator();
@@ -474,32 +343,26 @@
                 osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
                 gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'bell') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(1046.5, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(1318.5, audioCtx.currentTime + 0.1);
                 gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.8);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
             } else if (type === 'buy') {
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(330, audioCtx.currentTime + 0.15);
+                osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.15);
                 gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'error') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.15);
                 gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             }
         }
 
@@ -510,13 +373,14 @@
                 document.getElementById('app-screen').classList.remove('hidden');
                 initApp();
             } else {
-                document.getElementById('error-msg').innerText = "Sai mật khẩu! Thử lại (1234)";
+                document.getElementById('error-msg').innerText = "Sai mật khẩu! (1234)";
             }
         }
 
         function initApp() {
             checkDailyReset();
             applyTheme();
+            applyButtonCustomization();
             renderUI();
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
         }
@@ -530,18 +394,82 @@
         function applyTheme() {
             const root = document.getElementById('body-root');
             const container = document.getElementById('main-container');
-            if (appData.theme === 'light') {
-                root.setAttribute('data-theme', 'light');
-            } else {
-                root.removeAttribute('data-theme');
-            }
+            if (appData.theme === 'light') root.setAttribute('data-theme', 'light');
+            else root.removeAttribute('data-theme');
 
             container.classList.remove('flame-skin', 'rgb-skin');
-            if (appData.rgbSkinActive) {
-                container.classList.add('rgb-skin');
-            } else if (appData.flameSkinActive) {
-                container.classList.add('flame-skin');
+            if (appData.rgbSkinActive) container.classList.add('rgb-skin');
+            else if (appData.flameSkinActive) container.classList.add('flame-skin');
+        }
+
+        function changeButtonColor(color) {
+            appData.customBtnColor = color;
+            appData.rgbButtonsActive = false;
+            document.getElementById('rgb-btn-toggle').checked = false;
+            saveData();
+            applyButtonCustomization();
+        }
+
+        function toggleRGBButtons(checkbox) {
+            appData.rgbButtonsActive = checkbox.checked;
+            saveData();
+            applyButtonCustomization();
+        }
+
+        function applyButtonCustomization() {
+            document.documentElement.style.setProperty('--btn-custom-color', appData.customBtnColor);
+            document.getElementById('btn-color-picker').value = appData.customBtnColor;
+            document.getElementById('rgb-btn-toggle').checked = appData.rgbButtonsActive;
+
+            const buttons = document.querySelectorAll('.custom-btn');
+            buttons.forEach(btn => {
+                if (appData.rgbButtonsActive) btn.classList.add('rgb-buttons');
+                else btn.classList.remove('rgb-buttons');
+            });
+        }
+
+        function handlePetImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.type !== "image/png") {
+                alert("⛔ Vui lòng chỉ chọn định dạng file .png!");
+                return;
             }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                appData.petCustomImage = e.target.result;
+                saveData();
+                updatePetDisplay();
+                alert("✨ Đã cập nhật ảnh Pet .png thành công!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePetDisplay() {
+            const imgTag = document.getElementById('pet-avatar-img');
+            if (appData.petCustomImage) imgTag.src = appData.petCustomImage;
+            else imgTag.src = "https://i.imgur.com/8Qz462Y.png";
+
+            document.getElementById('pet-level-text').innerText = `Lv.${appData.petLevel}`;
+            document.getElementById('pet-buff-text').innerText = `+${appData.petLevel * 10}% xu`;
+
+            const maxXP = appData.petLevel * 100;
+            const percent = Math.min(100, (appData.petXp / maxXP) * 100);
+            document.getElementById('pet-xp-bar').style.width = `${percent}%`;
+            document.getElementById('pet-xp-text').innerText = `XP: ${appData.petXp} / ${maxXP}`;
+        }
+
+        function addPetXp(amount) {
+            appData.petXp += amount;
+            let maxXP = appData.petLevel * 100;
+            if (appData.petXp >= maxXP) {
+                appData.petXp -= maxXP;
+                appData.petLevel++;
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+                alert(`🎉 Chúc mừng Pet đã thăng lên Lv.${appData.petLevel}! Tăng mạnh % điểm thưởng nhiệm vụ.`);
+            }
+            saveData();
+            updatePetDisplay();
         }
 
         function checkDailyReset() {
@@ -554,7 +482,7 @@
         }
 
         function saveData() {
-            localStorage.setItem('my_daily_app', JSON.stringify(appData));
+            localStorage.setItem('my_daily_app_v3', JSON.stringify(appData));
         }
 
         function renderUI() {
@@ -562,6 +490,7 @@
             document.getElementById('streak').innerText = appData.streak;
             document.getElementById('task-count-label').innerText = `${appData.tasks.length}/8`;
             applyTheme();
+            applyButtonCustomization();
 
             const taskUl = document.getElementById('task-list');
             taskUl.innerHTML = '';
@@ -591,55 +520,46 @@
                 const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
                 if (currentTimeStr < task.timeUnlock) {
                     playSound('error');
-                    alert(`⛔ Chưa đến giờ! Nhiệm vụ này yêu cầu hoàn thành sau lúc ${task.timeUnlock}.`);
+                    alert(`⛔ Chưa đến giờ! Mở khóa lúc ${task.timeUnlock}.`);
                     checkbox.checked = false;
-                    
                     const taskLi = checkbox.closest('.task-item');
-                    taskLi.classList.add('error-border', 'shake-anim');
-                    setTimeout(() => taskLi.classList.remove('error-border', 'shake-anim'), 600);
+                    taskLi.classList.add('shake-anim');
+                    setTimeout(() => taskLi.classList.remove('shake-anim'), 300);
                     return;
                 }
             }
 
-            checkbox.classList.add('shake-anim');
-            setTimeout(() => checkbox.classList.remove('shake-anim'), 300);
-
             if (task) {
                 task.completed = !task.completed;
+                let earnedPoints = task.points * (1 + ((appData.petLevel - 1) * 0.1));
+
                 if (task.completed) {
-                    appData.coins += task.points;
+                    appData.coins += Math.round(earnedPoints);
                     playSound('complete');
                     confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
                 } else {
-                    appData.coins -= task.points;
+                    appData.coins -= Math.round(earnedPoints);
+                    if (appData.coins < 0) appData.coins = 0;
                 }
                 saveData();
                 renderUI();
-                checkAllTasksCompleted();
             }
         }
 
         function addNewTask() {
             if (appData.tasks.length >= 8) {
-                alert("Bạn chỉ có thể tạo tối đa 8 nhiệm vụ mỗi ngày!");
+                alert("Tối đa 8 nhiệm vụ!");
                 return;
             }
-
             const input = document.getElementById('new-task-text');
             const timeInput = document.getElementById('new-task-time');
             const text = input.value.trim();
             if (!text) return;
 
-            const newTask = {
-                id: Date.now(),
-                text: text,
-                points: 10,
-                timeUnlock: timeInput.value || "00:00",
-                completed: false
-            };
-            appData.tasks.push(newTask);
-            input.value = '';
-            timeInput.value = '';
+            appData.tasks.push({
+                id: Date.now(), text: text, points: 10, timeUnlock: timeInput.value || "00:00", completed: false
+            });
+            input.value = ''; timeInput.value = '';
             saveData();
             renderUI();
         }
@@ -652,14 +572,7 @@
 
         function openShop() {
             playSound('bell');
-
-            const dialogues = [
-                "gpz gpz gpz~",
-                "what you want",
-                "want to buy something ?"
-            ];
-            const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
-            document.getElementById('dialogue-text').innerText = `"${randomDialogue}"`;
+            updatePetDisplay();
 
             const shopUl = document.getElementById('shop-list');
             shopUl.innerHTML = '';
@@ -669,8 +582,8 @@
                 li.innerHTML = `
                     <span style="text-align: left; font-size: 13px;">${item.name}</span>
                     <div style="display: flex; gap: 5px; align-items: center;">
-                        <button onclick="buyItem(${item.id})" style="padding: 5px 10px; font-size: 13px;">${item.cost} 🪙</button>
-                        <button onclick="deleteShopItem(${item.id})" class="delete-btn" title="Xóa món đồ này">x</button>
+                        <button class="custom-btn" onclick="buyItem(${item.id})" style="padding: 5px 10px; font-size: 12px;">${item.cost} 🪙</button>
+                        ${item.type !== 'food' ? `<button onclick="deleteShopItem(${item.id})" class="delete-btn">x</button>` : ''}
                     </div>
                 `;
                 shopUl.appendChild(li);
@@ -679,9 +592,7 @@
             document.getElementById('shop-modal').classList.remove('hidden');
         }
 
-        function closeShop() {
-            document.getElementById('shop-modal').classList.add('hidden');
-        }
+        function closeShop() { document.getElementById('shop-modal').classList.add('hidden'); }
 
         function buyItem(id) {
             const item = appData.shop.find(s => s.id === id);
@@ -690,17 +601,20 @@
             if (appData.coins >= item.cost) {
                 appData.coins -= item.cost;
                 playSound('buy');
-                
-                if (item.type === 'rgb' || item.name.includes("RGB")) {
+
+                if (item.type === 'food') {
+                    addPetXp(item.xp);
+                    alert(`🍖 Pet đã ăn ngon lành và nhận được +${item.xp} XP!`);
+                } else if (item.type === 'rgb') {
                     appData.rgbSkinActive = true;
                     appData.flameSkinActive = false;
-                    alert("✨ Đã kích hoạt Skin RGB Siêu Cháy thành công!");
-                } else if (item.type === 'flame' || item.name.includes("Viền Lửa")) {
+                    alert("✨ Đã kích hoạt Skin RGB Khung!");
+                } else if (item.type === 'flame') {
                     appData.flameSkinActive = true;
                     appData.rgbSkinActive = false;
-                    alert("🔥 Đã kích hoạt Skin Viền Lửa thành công!");
+                    alert("🔥 Đã kích hoạt Skin Viền Lửa!");
                 } else {
-                    alert("🎉 Đổi phần thưởng thành công!");
+                    alert("🎉 Đổi thưởng thành công!");
                 }
 
                 saveData();
@@ -708,38 +622,8 @@
                 openShop();
             } else {
                 playSound('error');
-                alert("❌ Chủ shop cá sấu lắc đầu: Bạn không đủ xu để mua món này!");
+                alert("❌ Bạn không đủ xu để mua món này!");
             }
-        }
-
-        function addNewShopItem() {
-            const nameInput = document.getElementById('shop-item-name');
-            const costInput = document.getElementById('shop-item-cost');
-            const name = nameInput.value.trim();
-            const cost = parseInt(costInput.value);
-
-            if (!name || isNaN(cost) || cost <= 0) {
-                alert("Vui lòng nhập tên món đồ và giá xu hợp lệ!");
-                return;
-            }
-
-            let type = 'reward';
-            if (name.toLowerCase().includes('rgb')) type = 'rgb';
-            else if (name.toLowerCase().includes('skin') || name.toLowerCase().includes('lửa')) type = 'flame';
-
-            const newItem = {
-                id: Date.now(),
-                name: name,
-                cost: cost,
-                type: type
-            };
-
-            appData.shop.push(newItem);
-            nameInput.value = '';
-            costInput.value = '';
-            saveData();
-            openShop();
-            alert("Đã thêm món đồ mới vào cửa hàng!");
         }
 
         function deleteShopItem(id) {
@@ -748,36 +632,21 @@
             openShop();
         }
 
-        function checkAllTasksCompleted() {
-            if (appData.tasks.length > 0 && appData.tasks.every(t => t.completed)) {
-                confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
-            }
-        }
-
         function debugAddCoins(amount) {
             appData.coins += amount;
             saveData();
             renderUI();
-            alert(`Đã cộng thêm ${amount} xu (Debug Mode)`);
-        }
-
-        function debugUnlockAllTime() {
-            appData.tasks.forEach(t => t.timeUnlock = "00:00");
-            saveData();
-            renderUI();
-            alert("Đã gỡ bỏ giới hạn giờ của tất cả nhiệm vụ!");
         }
 
         function debugResetTasks() {
             appData.tasks.forEach(t => t.completed = false);
             saveData();
             renderUI();
-            alert("Đã reset trạng thái các nhiệm vụ về chưa hoàn thành!");
         }
 
         function resetData() {
-            if(confirm("Bạn có chắc chắn muốn xóa hết dữ liệu?")) {
-                localStorage.removeItem('my_daily_app');
+            if(confirm("Xóa sạch dữ liệu?")) {
+                localStorage.removeItem('my_daily_app_v3');
                 location.reload();
             }
         }
