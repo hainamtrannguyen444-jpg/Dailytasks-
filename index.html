@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Nhiệm Vụ Sinh Tồn</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace; /* Phông chữ phong cách game */
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #login-screen, #game-screen {
+            width: 100%;
+            max-width: 400px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        #game-screen { display: none; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stat-box { font-size: 18px; font-weight: bold; }
+        .stat-box span { color: #ffd700; } /* Màu vàng cho điểm */
+        .streak span { color: #ff4500; } /* Màu cam cho streak */
+        
+        .task-list { text-align: left; margin-bottom: 20px; }
+        .task {
+            background: #333;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .task input { margin-right: 10px; width: 18px; height: 18px; }
+        
+        .shop {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover { background: #45a049; }
+        input[type="password"] {
+            padding: 10px;
+            width: 80%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Màn hình Đăng Nhập -->
+    <div id="login-screen">
+        <h2>NHẬP MẬT MÃ</h2>
+        <input type="password" id="passcode" placeholder="****">
+        <button onclick="checkPasscode()">Vào Hệ Thống</button>
+        <p id="error-msg" style="color: red; display: none;">Sai mật mã!</p>
+    </div>
+
+    <!-- Màn hình Nhiệm Vụ -->
+    <div id="game-screen">
+        <h2>BẢNG NHIỆM VỤ</h2>
+        
+        <div class="stats">
+            <div class="stat-box">Vàng: <span id="coin-display">0</span></div>
+            <div class="stat-box streak">Streak: <span id="streak-display">0</span>🔥</div>
+            <div class="stat-box">Băng: <span id="freeze-display">0</span>🧊</div>
+        </div>
+
+        <div class="task-list">
+            <h3>Nhiệm vụ hôm nay (4)</h3>
+            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 1. Nhiệm vụ học tập 1</div>
+            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 2. Nhiệm vụ học tập 2</div>
+            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 3. Hoạt động thể chất</div>
+            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 4. Việc nhà / Đọc sách</div>
+        </div>
+
+        <div class="shop">
+            <h3>Cửa Hàng Vật Phẩm</h3>
+            <p>Thẻ đóng băng (Giữ Streak nếu nghỉ 1 ngày)</p>
+            <button onclick="buyFreeze()">Mua (50 Vàng)</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu mặc định
+        let player = {
+            coins: 0,
+            streak: 0,
+            freezes: 0,
+            lastLoginDate: new Date().toDateString(),
+            tasksCompletedToday: 0
+        };
+
+        function checkPasscode() {
+            let pass = document.getElementById("passcode").value;
+            if (pass === "1234") { // Bạn có thể đổi mật khẩu ở đây
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("game-screen").style.display = "block";
+                loadData();
+            } else {
+                document.getElementById("error-msg").style.display = "block";
+            }
+        }
+
+        function loadData() {
+            let savedData = localStorage.getItem("gameData");
+            if (savedData) {
+                player = JSON.parse(savedData);
+            }
+            checkNewDay();
+            updateUI();
+        }
+
+        function checkNewDay() {
+            let today = new Date().toDateString();
+            if (player.lastLoginDate !== today) {
+                // Sang ngày mới
+                if (player.tasksCompletedToday < 4) {
+                    if (player.freezes > 0) {
+                        player.freezes -= 1; // Trừ thẻ đóng băng
+                        alert("Thẻ đóng băng đã được sử dụng để bảo vệ Streak!");
+                    } else {
+                        player.streak = 0; // Mất streak
+                        alert("Bạn đã không hoàn thành nhiệm vụ hôm qua. Streak về 0!");
+                    }
+                }
+                player.tasksCompletedToday = 0;
+                player.lastLoginDate = today;
+                saveData();
+                
+                // Bỏ tick các ô nhiệm vụ
+                document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = false);
+            }
+        }
+
+        function updateTasks() {
+            let checkboxes = document.querySelectorAll('.task-checkbox');
+            let completed = 0;
+            checkboxes.forEach(cb => { if (cb.checked) completed++; });
+
+            // Nếu vừa hoàn thành đủ 4 nhiệm vụ
+            if (completed === 4 && player.tasksCompletedToday < 4) {
+                player.streak += 1;
+                player.coins += 20; // Thưởng 20 Vàng mỗi ngày xong nhiệm vụ
+                alert("Chúc mừng! Bạn đã hoàn thành 4 nhiệm vụ. +1 Streak, +20 Vàng!");
+            }
+            // Nếu bỏ tick làm số lượng < 4
+            else if (completed < 4 && player.tasksCompletedToday === 4) {
+                player.streak -= 1;
+                player.coins -= 20;
+            }
+
+            player.tasksCompletedToday = completed;
+            saveData();
+            updateUI();
+        }
+
+        function buyFreeze() {
+            if (player.coins >= 50) {
+                player.coins -= 50;
+                player.freezes += 1;
+                saveData();
+                updateUI();
+                alert("Đã mua Thẻ đóng băng thành công!");
+            } else {
+                alert("Bạn không đủ Vàng để mua!");
+            }
+        }
+
+        function updateUI() {
+            document.getElementById("coin-display").innerText = player.coins;
+            document.getElementById("streak-display").innerText = player.streak;
+            document.getElementById("freeze-display").innerText = player.freezes;
+        }
+
+        function saveData() {
+            localStorage.setItem("gameData", JSON.stringify(player));
+        }
+    </script>
+</body>
+</html>
