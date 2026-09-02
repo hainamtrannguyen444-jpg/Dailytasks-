@@ -3,209 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Nhiệm Vụ Sinh Tồn</title>
+    <title>Nhiệm vụ hàng ngày & Cửa hàng</title>
+    <!-- Thư viện hiệu ứng pháo hoa Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --border-color: #334155;
+        }
+
         body {
-            font-family: 'Courier New', monospace; /* Phông chữ phong cách game */
-            background-color: #121212;
-            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
         }
-        #login-screen, #game-screen {
+
+        .container {
             width: 100%;
-            max-width: 400px;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        /* Màn hình khóa */
+        #lock-screen {
             text-align: center;
         }
-        #game-screen { display: none; }
-        .stats {
+
+        #lock-screen input {
+            width: 80%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #0f172a;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Giao diện chính */
+        .header {
             display: flex;
             justify-content: space-between;
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 8px;
+            align-items: center;
             margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
         }
-        .stat-box { font-size: 18px; font-weight: bold; }
-        .stat-box span { color: #ffd700; } /* Màu vàng cho điểm */
-        .streak span { color: #ff4500; } /* Màu cam cho streak */
-        
-        .task-list { text-align: left; margin-bottom: 20px; }
-        .task {
-            background: #333;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .fire-streak {
+            color: #f97316;
+            animation: burn 1.5s infinite alternate;
+        }
+
+        @keyframes burn {
+            0% { transform: scale(1); text-shadow: 0 0 5px #f97316; }
+            100% { transform: scale(1.15); text-shadow: 0 0 15px #ef4444, 0 0 25px #f59e0b; }
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .task-list, .shop-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .task-item, .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .task-left {
             display: flex;
             align-items: center;
+            gap: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .task input { margin-right: 10px; width: 18px; height: 18px; }
-        
-        .shop {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: left;
+
+        .delete-btn {
+            background: transparent;
+            color: var(--danger-color);
+            padding: 4px 8px;
+            font-size: 14px;
         }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
         }
-        button:hover { background: #45a049; }
-        input[type="password"] {
-            padding: 10px;
-            width: 80%;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: none;
-            text-align: center;
+
+        .add-task-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .add-task-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #0f172a;
+            color: var(--text-color);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .shop-item button {
+            padding: 6px 12px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Màn hình Đăng Nhập -->
-    <div id="login-screen">
-        <h2>NHẬP MẬT MÃ</h2>
-        <input type="password" id="passcode" placeholder="****">
-        <button onclick="checkPasscode()">Vào Hệ Thống</button>
-        <p id="error-msg" style="color: red; display: none;">Sai mật mã!</p>
-    </div>
-
-    <!-- Màn hình Nhiệm Vụ -->
-    <div id="game-screen">
-        <h2>BẢNG NHIỆM VỤ</h2>
-        
-        <div class="stats">
-            <div class="stat-box">Vàng: <span id="coin-display">0</span></div>
-            <div class="stat-box streak">Streak: <span id="streak-display">0</span>🔥</div>
-            <div class="stat-box">Băng: <span id="freeze-display">0</span>🧊</div>
+    <div class="container">
+        <!-- Khung Nhập Mật Khẩu -->
+        <div id="lock-screen">
+            <h2>Mật khẩu truy cập</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Nhập mã bảo mật để vào ứng dụng</p>
+            <input type="password" id="pass-input" placeholder="Nhập mật khẩu (Mặc định: 1234)">
+            <br>
+            <button onclick="checkPassword()">Truy cập</button>
+            <p id="error-msg" style="color: var(--danger-color); margin-top: 10px;"></p>
         </div>
 
-        <div class="task-list">
-            <h3>Nhiệm vụ hôm nay (4)</h3>
-            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 1. Nhiệm vụ học tập 1</div>
-            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 2. Nhiệm vụ học tập 2</div>
-            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 3. Hoạt động thể chất</div>
-            <div class="task"><input type="checkbox" class="task-checkbox" onchange="updateTasks()"> 4. Việc nhà / Đọc sách</div>
-        </div>
+        <!-- Khung Ứng Dụng Chính -->
+        <div id="app-screen" class="hidden">
+            <div class="header">
+                <div>
+                    <h2 style="margin: 0;">Nhiệm Vụ Ngày</h2>
+                    <span id="current-date" style="font-size: 12px; color: #94a3b8;"></span>
+                </div>
+                <div class="stats">
+                    <div>🪙 <span id="coins">0</span></div>
+                    <div class="fire-streak">🔥 <span id="streak">0</span> ngày</div>
+                </div>
+            </div>
 
-        <div class="shop">
-            <h3>Cửa Hàng Vật Phẩm</h3>
-            <p>Thẻ đóng băng (Giữ Streak nếu nghỉ 1 ngày)</p>
-            <button onclick="buyFreeze()">Mua (50 Vàng)</button>
+            <!-- Thêm Nhiệm Vụ Mới -->
+            <div class="add-task-box">
+                <input type="text" id="new-task-text" placeholder="Thêm nhiệm vụ mới...">
+                <button onclick="addNewTask()">Thêm</button>
+            </div>
+
+            <div class="section-title">Danh sách nhiệm vụ</div>
+            <ul id="task-list" class="task-list"></ul>
+
+            <div class="section-title">Cửa hàng phần thưởng</div>
+            <ul id="shop-list" class="shop-list"></ul>
+            
+            <button onclick="resetData()" style="background: transparent; color: #64748b; font-size: 12px; width: 100%; margin-top: 10px;">Xóa dữ liệu / Đặt lại từ đầu</button>
         </div>
     </div>
 
     <script>
+        const CORRECT_PASS = "1234";
+
         // Dữ liệu mặc định
-        let player = {
+        let appData = JSON.parse(localStorage.getItem('my_daily_app')) || {
             coins: 0,
-            streak: 0,
-            freezes: 0,
-            lastLoginDate: new Date().toDateString(),
-            tasksCompletedToday: 0
+            streak: 1,
+            lastDate: "",
+            tasks: [
+                { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, completed: false },
+                { id: 2, text: "Đọc sách 20 phút", points: 10, completed: false },
+                { id: 3, text: "Dọn dẹp góc học tập", points: 5, completed: false },
+                { id: 4, text: "Tập thể dục 15 phút", points: 10, completed: false }
+            ],
+            shop: [
+                { id: 1, name: "30 phút chơi Roblox / Minecraft", cost: 30 },
+                { id: 2, name: "Xem phim / Giải trí 1 tập", cost: 20 },
+                { id: 3, name: "Đóng băng Streak (Giữ chuỗi)", cost: 50 }
+            ]
         };
 
-        function checkPasscode() {
-            let pass = document.getElementById("passcode").value;
-            if (pass === "1234") { // Bạn có thể đổi mật khẩu ở đây
-                document.getElementById("login-screen").style.display = "none";
-                document.getElementById("game-screen").style.display = "block";
-                loadData();
+        function checkPassword() {
+            const val = document.getElementById('pass-input').value;
+            if(val === CORRECT_PASS) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                initApp();
             } else {
-                document.getElementById("error-msg").style.display = "block";
+                document.getElementById('error-msg').innerText = "Sai mật khẩu! Thử lại (1234)";
             }
         }
 
-        function loadData() {
-            let savedData = localStorage.getItem("gameData");
-            if (savedData) {
-                player = JSON.parse(savedData);
-            }
-            checkNewDay();
-            updateUI();
+        function initApp() {
+            checkDailyReset();
+            renderUI();
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
         }
 
-        function checkNewDay() {
-            let today = new Date().toDateString();
-            if (player.lastLoginDate !== today) {
-                // Sang ngày mới
-                if (player.tasksCompletedToday < 4) {
-                    if (player.freezes > 0) {
-                        player.freezes -= 1; // Trừ thẻ đóng băng
-                        alert("Thẻ đóng băng đã được sử dụng để bảo vệ Streak!");
-                    } else {
-                        player.streak = 0; // Mất streak
-                        alert("Bạn đã không hoàn thành nhiệm vụ hôm qua. Streak về 0!");
-                    }
-                }
-                player.tasksCompletedToday = 0;
-                player.lastLoginDate = today;
+        // Kiểm tra xem sang ngày mới chưa để reset nhiệm vụ
+        function checkDailyReset() {
+            const today = new Date().toDateString();
+            if (appData.lastDate !== today) {
+                // Nếu sang ngày mới, reset trạng thái hoàn thành task
+                appData.tasks.forEach(t => t.completed = false);
+                appData.lastDate = today;
                 saveData();
-                
-                // Bỏ tick các ô nhiệm vụ
-                document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = false);
             }
-        }
-
-        function updateTasks() {
-            let checkboxes = document.querySelectorAll('.task-checkbox');
-            let completed = 0;
-            checkboxes.forEach(cb => { if (cb.checked) completed++; });
-
-            // Nếu vừa hoàn thành đủ 4 nhiệm vụ
-            if (completed === 4 && player.tasksCompletedToday < 4) {
-                player.streak += 1;
-                player.coins += 20; // Thưởng 20 Vàng mỗi ngày xong nhiệm vụ
-                alert("Chúc mừng! Bạn đã hoàn thành 4 nhiệm vụ. +1 Streak, +20 Vàng!");
-            }
-            // Nếu bỏ tick làm số lượng < 4
-            else if (completed < 4 && player.tasksCompletedToday === 4) {
-                player.streak -= 1;
-                player.coins -= 20;
-            }
-
-            player.tasksCompletedToday = completed;
-            saveData();
-            updateUI();
-        }
-
-        function buyFreeze() {
-            if (player.coins >= 50) {
-                player.coins -= 50;
-                player.freezes += 1;
-                saveData();
-                updateUI();
-                alert("Đã mua Thẻ đóng băng thành công!");
-            } else {
-                alert("Bạn không đủ Vàng để mua!");
-            }
-        }
-
-        function updateUI() {
-            document.getElementById("coin-display").innerText = player.coins;
-            document.getElementById("streak-display").innerText = player.streak;
-            document.getElementById("freeze-display").innerText = player.freezes;
         }
 
         function saveData() {
-            localStorage.setItem("gameData", JSON.stringify(player));
+            localStorage.setItem('my_daily_app', JSON.stringify(appData));
+        }
+
+        function renderUI() {
+            document.getElementById('coins').innerText = appData.coins;
+            document.getElementById('streak').innerText = appData.streak;
+
+            // Render Task List
+            const taskUl = document.getElementById('task-list');
+            taskUl.innerHTML = '';
+            appData.tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <div class="task-left">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})">
+                        <span>${task.text} (+${task.points}đ)</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Xóa</button>
+                `;
+                taskUl.appendChild(li);
+            });
+
+            // Render Shop List
+            const shopUl = document.getElementById('shop-list');
+            shopUl.innerHTML = '';
+            appData.shop.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'shop-item';
+                li.innerHTML = `
+                    <span>${item.name}</span>
+                    <button onclick="buyItem(${item.cost})">${item.cost} 🪙</button>
+                `;
+                shopUl.appendChild(li);
+            });
+        }
+
+        function toggleTask(id) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) {
+                    appData.coins += task.points;
+                } else {
+                    appData.coins -= task.points;
+                }
+                saveData();
+                renderUI();
+
+                // Kiểm tra xem đã hoàn thành toàn bộ nhiệm vụ trong ngày chưa để bắn pháo hoa
+                checkAllTasksCompleted();
+            }
+        }
+
+        function addNewTask() {
+            const input = document.getElementById('new-task-text');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                points: 10,
+                completed: false
+            };
+            appData.tasks.push(newTask);
+            input.value = '';
+            saveData();
+            renderUI();
+        }
+
+        function deleteTask(id) {
+            appData.tasks = appData.tasks.filter(t => t.id !== id);
+            saveData();
+            renderUI();
+        }
+
+        function buyItem(cost) {
+            if (appData.coins >= cost) {
+                appData.coins -= cost;
+                saveData();
+                renderUI();
+                alert("Đổi phần thưởng thành công! Chúc bạn chơi game vui vẻ!");
+            } else {
+                alert("Bạn không đủ xu để đổi phần thưởng này!");
+            }
+        }
+
+        function checkAllTasksCompleted() {
+            if (appData.tasks.length > 0 && appData.tasks.every(t => t.completed)) {
+                // Bắn pháo hoa chúc mừng
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function resetData() {
+            if(confirm("Bạn có chắc chắn muốn xóa hết dữ liệu?")) {
+                localStorage.removeItem('my_daily_app');
+                location.reload();
+            }
         }
     </script>
 </body>
