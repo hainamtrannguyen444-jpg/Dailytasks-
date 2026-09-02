@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhiệm vụ hàng ngày & Cửa hàng</title>
-    <!-- Thư viện hiệu ứng pháo hoa -->
+    <title>Nhiệm vụ hàng ngày & Cửa hàng Cá Sấu</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -16,24 +15,40 @@
             --danger-color: #ef4444;
             --border-color: #334155;
             --item-bg: rgba(255, 255, 255, 0.03);
+            --neon-glow: 0 0 15px rgba(56, 189, 248, 0.5);
+            --border-neon: 2px solid #38bdf8;
         }
 
-        /* Chế độ Sáng (Light Mode) */
+        /* Chế độ Sáng: Nền trắng, điểm nhấn xanh dương neon phát sáng */
         [data-theme="light"] {
             --bg-color: #f1f5f9;
             --card-bg: #ffffff;
             --text-color: #0f172a;
-            --accent-color: #0284c7;
-            --accent-hover: #0369a1;
+            --accent-color: #0077ff;
+            --accent-hover: #005bb5;
             --danger-color: #dc2626;
             --border-color: #cbd5e1;
             --item-bg: rgba(0, 0, 0, 0.02);
+            --neon-glow: 0 0 20px rgba(0, 119, 255, 0.6);
+            --border-neon: 2px solid #0077ff;
         }
 
-        /* Skin Lửa Cho Hub */
+        /* Chế độ Tối: Đen tuyền kết hợp xanh lá neon phát sáng */
+        :root:not([data-theme="light"]) {
+            --bg-color: #000000;
+            --card-bg: #090d0a;
+            --text-color: #f8fafc;
+            --accent-color: #22c55e;
+            --accent-hover: #16a34a;
+            --border-color: #14532d;
+            --neon-glow: 0 0 20px rgba(34, 197, 94, 0.7);
+            --border-neon: 2px solid #22c55e;
+        }
+
+        /* Skin Lửa Cho Hub (Giữ nguyên hoặc đè tùy chọn) */
         .flame-skin {
             border: 2px solid #f97316 !important;
-            box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.7) !important;
         }
 
         body {
@@ -55,9 +70,10 @@
             background: var(--card-bg);
             padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: var(--border-neon);
+            box-shadow: var(--neon-glow);
             box-sizing: border-box;
-            transition: background 0.3s, border 0.3s;
+            transition: all 0.3s ease;
         }
 
         #lock-screen {
@@ -70,7 +86,7 @@
             font-size: 18px;
             text-align: center;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
+            border: var(--border-neon);
             background: var(--bg-color);
             color: var(--text-color);
             margin-bottom: 15px;
@@ -86,6 +102,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s;
+            box-shadow: 0 0 8px var(--accent-color);
         }
 
         button:hover {
@@ -118,7 +135,6 @@
             100% { transform: scale(1.15); text-shadow: 0 0 15px #ef4444, 0 0 25px #f59e0b; }
         }
 
-        /* Hiệu ứng rung nhẹ khi tích */
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-4px); }
@@ -135,6 +151,10 @@
             font-size: 18px;
             margin-bottom: 10px;
             color: var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 0 8px var(--accent-color);
         }
 
         .task-list, .shop-list {
@@ -154,17 +174,28 @@
             border: 1px solid var(--border-color);
         }
 
-        .task-item.completed span {
+        .task-item.completed span.task-text {
             text-decoration: line-through;
             color: #94a3b8;
         }
 
         .task-left {
             display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .task-main {
+            display: flex;
             align-items: center;
             gap: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        }
+
+        .task-time-label {
+            font-size: 11px;
+            color: var(--accent-color);
+            margin-left: 24px;
         }
 
         .delete-btn {
@@ -172,6 +203,7 @@
             color: var(--danger-color);
             padding: 4px 8px;
             font-size: 14px;
+            box-shadow: none;
         }
         .delete-btn:hover {
             background: rgba(239, 68, 68, 0.1);
@@ -179,11 +211,21 @@
 
         .add-task-box {
             display: flex;
+            flex-direction: column;
             gap: 8px;
             margin-bottom: 20px;
+            background: var(--item-bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
-        .add-task-box input {
+        .add-task-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-task-box input, .add-task-box select {
             flex: 1;
             padding: 8px 12px;
             border-radius: 6px;
@@ -194,19 +236,98 @@
 
         .top-controls {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 10px;
             margin-bottom: 10px;
         }
 
         .icon-btn {
             background: transparent;
-            border: 1px solid var(--border-color);
+            border: var(--border-neon);
             color: var(--text-color);
             padding: 5px 10px;
             font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        /* Khung Debug Menu */
+        .debug-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px dashed var(--accent-color);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .debug-panel h4 {
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+        }
+
+        .debug-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .debug-buttons button {
+            font-size: 11px;
+            padding: 5px 8px;
+        }
+
+        /* Modal Shop Cá Sấu */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 420px;
+            padding: 24px;
+            border-radius: 16px;
+            border: var(--border-neon);
+            box-shadow: var(--neon-glow);
+            text-align: center;
+            position: relative;
+        }
+
+        .shopkeeper-img {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #f97316;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .dialogue-box {
+            background: var(--item-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-style: italic;
+            font-weight: bold;
+            color: #f59e0b;
+            margin-bottom: 15px;
+            min-height: 24px;
+        }
+
+        .close-shop-btn {
+            background: var(--danger-color);
+            margin-top: 15px;
+            width: 100%;
+            box-shadow: none;
         }
 
         .hidden {
@@ -230,6 +351,7 @@
         <!-- Khung Ứng Dụng Chính -->
         <div id="app-screen" class="hidden">
             <div class="top-controls">
+                <button class="icon-btn" onclick="openShop()">🐊 Mở Cửa Hàng</button>
                 <button class="icon-btn" onclick="toggleTheme()">☀️ / 🌙 Sáng-Tối</button>
             </div>
 
@@ -244,19 +366,45 @@
                 </div>
             </div>
 
-            <!-- Thêm Nhiệm Vụ Mới -->
+            <!-- Thêm Nhiệm Vụ Mới (Tối đa 8 nv) -->
             <div class="add-task-box">
-                <input type="text" id="new-task-text" placeholder="Thêm nhiệm vụ mới...">
-                <button onclick="addNewTask()">Thêm</button>
+                <div style="font-size: 13px; font-weight: bold; color: var(--accent-color);">Thêm nhiệm vụ mới (Tối đa 8)</div>
+                <div class="add-task-row">
+                    <input type="text" id="new-task-text" placeholder="Tên nhiệm vụ...">
+                    <input type="time" id="new-task-time" title="Giờ mở khóa nhiệm vụ">
+                </div>
+                <button onclick="addNewTask()">Thêm Nhiệm Vụ</button>
             </div>
 
-            <div class="section-title">Danh sách nhiệm vụ</div>
+            <div class="section-title">
+                <span>Danh sách nhiệm vụ</span>
+                <span id="task-count-label" style="font-size: 13px; color: #94a3b8;">0/8</span>
+            </div>
             <ul id="task-list" class="task-list"></ul>
-
-            <div class="section-title">Cửa hàng phần thưởng</div>
-            <ul id="shop-list" class="shop-list"></ul>
             
-            <button onclick="resetData()" style="background: transparent; color: #64748b; font-size: 12px; width: 100%; margin-top: 10px;">Xóa dữ liệu / Đặt lại từ đầu</button>
+            <!-- DEBUG MENU ĐỂ TEST TÍNH NĂNG -->
+            <div class="debug-panel">
+                <h4>🛠️ Debug Menu (Dành để Test)</h4>
+                <div class="debug-buttons">
+                    <button onclick="debugAddCoins(50)">+50 Xu</button>
+                    <button onclick="debugUnlockAllTime()">Bỏ qua giờ (Unlock)</button>
+                    <button onclick="debugResetTasks()">Reset Trạng Thái NV</button>
+                    <button onclick="resetData()" style="background: var(--danger-color);">Xóa toàn bộ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cửa Hàng Cá Sấu -->
+    <div id="shop-modal" class="modal hidden">
+        <div class="modal-content">
+            <img src="https://m.media-amazon.com/images/I/61y8B3q93zL._AC_UF894,1000_QL80_.jpg" alt="Chủ Shop Cá Sấu" class="shopkeeper-img">
+            <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~"</div>
+
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">🛍️ Cửa Hàng Đổi Thưởng</div>
+            <ul id="shop-list" class="shop-list" style="max-height: 200px; overflow-y: auto;"></ul>
+
+            <button class="close-shop-btn" onclick="closeShop()">Đóng Cửa Hàng</button>
         </div>
     </div>
 
@@ -270,19 +418,21 @@
             flameSkinActive: false,
             lastDate: "",
             tasks: [
-                { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, completed: false },
-                { id: 2, text: "Đọc sách 20 phút", points: 10, completed: false },
-                { id: 3, text: "Dọn dẹp góc học tập", points: 5, completed: false },
-                { id: 4, text: "Tập thể dục 15 phút", points: 10, completed: false }
+                { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, timeUnlock: "00:00", completed: false },
+                { id: 2, text: "Đọc sách 20 phút", points: 10, timeUnlock: "00:00", completed: false },
+                { id: 3, text: "Dọn dẹp góc học tập", points: 5, timeUnlock: "00:00", completed: false },
+                { id: 4, text: "Tập thể dục 15 phút", points: 10, timeUnlock: "00:00", completed: false }
             ],
             shop: [
-                { id: 1, name: "30 phút chơi Roblox / Minecraft", cost: 30, type: 'reward' },
-                { id: 2, name: "Xem phim / Giải trí 1 tập", cost: 20, type: 'reward' },
-                { id: 3, name: "🔥 Mở khóa Skin Viền Lửa Cho Hub", cost: 60, type: 'skin' }
+                { id: 1, name: "🎮 30 phút chơi Roblox / Minecraft", cost: 30, type: 'reward' },
+                { id: 2, name: "🎬 Xem phim / Giải trí 1 tập", cost: 20, type: 'reward' },
+                { id: 3, name: "☕ Nghỉ ngơi thư giãn 15 phút", cost: 10, type: 'reward' },
+                { id: 4, name: "🔥 Mở khóa Skin Viền Lửa Cho Hub", cost: 60, type: 'skin' }
             ]
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
         function playSound(type) {
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const osc = audioCtx.createOscillator();
@@ -298,6 +448,14 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'bell') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1046.5, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1318.5, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
             } else if (type === 'buy') {
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(440, audioCtx.currentTime);
@@ -365,6 +523,7 @@
         function renderUI() {
             document.getElementById('coins').innerText = appData.coins;
             document.getElementById('streak').innerText = appData.streak;
+            document.getElementById('task-count-label').innerText = `${appData.tasks.length}/8`;
             applyTheme();
 
             const taskUl = document.getElementById('task-list');
@@ -374,32 +533,32 @@
                 li.className = `task-item ${task.completed ? 'completed' : ''}`;
                 li.innerHTML = `
                     <div class="task-left">
-                        <input type="checkbox" id="chk-${task.id}" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, event)">
-                        <span>${task.text} (+${task.points}đ)</span>
+                        <div class="task-main">
+                            <input type="checkbox" id="chk-${task.id}" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, event)">
+                            <span class="task-text">${task.text} (+${task.points}đ)</span>
+                        </div>
+                        ${task.timeUnlock && task.timeUnlock !== "00:00" ? `<span class="task-time-label">⏰ Mở khóa lúc: ${task.timeUnlock}</span>` : ''}
                     </div>
                     <button class="delete-btn" onclick="deleteTask(${task.id})">Xóa</button>
                 `;
                 taskUl.appendChild(li);
-            });
-
-            const shopUl = document.getElementById('shop-list');
-            shopUl.innerHTML = '';
-            appData.shop.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'shop-item';
-                li.innerHTML = `
-                    <span>${item.name}</span>
-                    <button onclick="buyItem(${item.cost}, '${item.type}')">${item.cost} 🪙</button>
-                `;
-                shopUl.appendChild(li);
             });
         }
 
         function toggleTask(id, event) {
             const task = appData.tasks.find(t => t.id === id);
             const checkbox = event.target;
-            
-            // Hiệu ứng rung nhẹ mục tương ứng
+
+            if (task && !task.completed && task.timeUnlock && task.timeUnlock !== "00:00") {
+                const now = new Date();
+                const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                if (currentTimeStr < task.timeUnlock) {
+                    alert(`Chưa đến giờ! Nhiệm vụ này yêu cầu hoàn thành sau lúc ${task.timeUnlock}.`);
+                    checkbox.checked = false;
+                    return;
+                }
+            }
+
             checkbox.classList.add('shake-anim');
             setTimeout(() => checkbox.classList.remove('shake-anim'), 300);
 
@@ -408,13 +567,7 @@
                 if (task.completed) {
                     appData.coins += task.points;
                     playSound('complete');
-                    
-                    // Bắn các dải màu lấp lánh nhẹ quanh vị trí tích
-                    confetti({
-                        particleCount: 30,
-                        spread: 50,
-                        origin: { y: 0.7 }
-                    });
+                    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
                 } else {
                     appData.coins -= task.points;
                 }
@@ -425,7 +578,13 @@
         }
 
         function addNewTask() {
+            if (appData.tasks.length >= 8) {
+                alert("Bạn chỉ có thể tạo tối đa 8 nhiệm vụ mỗi ngày!");
+                return;
+            }
+
             const input = document.getElementById('new-task-text');
+            const timeInput = document.getElementById('new-task-time');
             const text = input.value.trim();
             if (!text) return;
 
@@ -433,10 +592,12 @@
                 id: Date.now(),
                 text: text,
                 points: 10,
+                timeUnlock: timeInput.value || "00:00",
                 completed: false
             };
             appData.tasks.push(newTask);
             input.value = '';
+            timeInput.value = '';
             saveData();
             renderUI();
         }
@@ -447,6 +608,36 @@
             renderUI();
         }
 
+        function openShop() {
+            playSound('bell');
+
+            const dialogues = [
+                "gpz gpz gpz~",
+                "what you want",
+                "want to buy something ?"
+            ];
+            const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+            document.getElementById('dialogue-text').innerText = `"${randomDialogue}"`;
+
+            const shopUl = document.getElementById('shop-list');
+            shopUl.innerHTML = '';
+            appData.shop.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'shop-item';
+                li.innerHTML = `
+                    <span style="text-align: left;">${item.name}</span>
+                    <button onclick="buyItem(${item.cost}, '${item.type}')">${item.cost} 🪙</button>
+                `;
+                shopUl.appendChild(li);
+            });
+
+            document.getElementById('shop-modal').classList.remove('hidden');
+        }
+
+        function closeShop() {
+            document.getElementById('shop-modal').classList.add('hidden');
+        }
+
         function buyItem(cost, type) {
             if (appData.coins >= cost) {
                 appData.coins -= cost;
@@ -454,26 +645,45 @@
                 
                 if (type === 'skin') {
                     appData.flameSkinActive = true;
-                    alert("Đã kích hoạt Skin Viền Lửa thành công! Giao diện Hub cực cháy!");
+                    alert("Đã kích hoạt Skin Viền Lửa thành công!");
                 } else {
-                    alert("Đổi phần thưởng thành công! Chúc bạn chơi game vui vẻ!");
+                    alert("Đổi phần thưởng thành công!");
                 }
 
                 saveData();
                 renderUI();
+                openShop();
             } else {
-                alert("Bạn không đủ xu để đổi phần thưởng này!");
+                alert("Chủ shop cá sấu lắc đầu: Bạn không đủ xu!");
             }
         }
 
         function checkAllTasksCompleted() {
             if (appData.tasks.length > 0 && appData.tasks.every(t => t.completed)) {
-                confetti({
-                    particleCount: 150,
-                    spread: 90,
-                    origin: { y: 0.6 }
-                });
+                confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
             }
+        }
+
+        // --- HÀM DEBUG MENU ---
+        function debugAddCoins(amount) {
+            appData.coins += amount;
+            saveData();
+            renderUI();
+            alert(`Đã cộng thêm ${amount} xu (Debug Mode)`);
+        }
+
+        function debugUnlockAllTime() {
+            appData.tasks.forEach(t => t.timeUnlock = "00:00");
+            saveData();
+            renderUI();
+            alert("Đã gỡ bỏ giới hạn giờ của tất cả nhiệm vụ!");
+        }
+
+        function debugResetTasks() {
+            appData.tasks.forEach(t => t.completed = false);
+            saveData();
+            renderUI();
+            alert("Đã reset trạng thái các nhiệm vụ về chưa hoàn thành!");
         }
 
         function resetData() {
