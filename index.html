@@ -19,7 +19,6 @@
             --border-neon: 2px solid #38bdf8;
         }
 
-        /* Chế độ Sáng: Nền trắng, điểm nhấn xanh dương neon phát sáng */
         [data-theme="light"] {
             --bg-color: #f1f5f9;
             --card-bg: #ffffff;
@@ -33,7 +32,6 @@
             --border-neon: 2px solid #0077ff;
         }
 
-        /* Chế độ Tối: Đen tuyền kết hợp xanh lá neon phát sáng */
         :root:not([data-theme="light"]) {
             --bg-color: #000000;
             --card-bg: #090d0a;
@@ -45,10 +43,24 @@
             --border-neon: 2px solid #22c55e;
         }
 
-        /* Skin Lửa Cho Hub (Giữ nguyên hoặc đè tùy chọn) */
-        .flame-skin {
+        /* Hiệu ứng Skin Viền Lửa Thường */
+        .container.flame-skin {
             border: 2px solid #f97316 !important;
-            box-shadow: 0 0 20px rgba(249, 115, 22, 0.7) !important;
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), inset 0 0 10px rgba(249, 115, 22, 0.5) !important;
+        }
+
+        /* Hiệu ứng Skin RGB Đổi Màu Liên Tục (Siêu Cháy) */
+        @keyframes rgbCycle {
+            0% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
+            20% { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
+            40% { border-color: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); }
+            60% { border-color: #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.8); }
+            80% { border-color: #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.8); }
+            100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
+        }
+
+        .container.rgb-skin {
+            animation: rgbCycle 4s linear infinite !important;
         }
 
         body {
@@ -143,8 +155,17 @@
             100% { transform: translateX(0); }
         }
 
+        @keyframes errorGlow {
+            0% { border-color: var(--danger-color); box-shadow: 0 0 10px var(--danger-color); }
+            100% { border-color: var(--border-color); box-shadow: none; }
+        }
+
         .shake-anim {
             animation: shake 0.3s ease-in-out;
+        }
+
+        .error-border {
+            animation: errorGlow 0.6s ease-in-out;
         }
 
         .section-title {
@@ -172,6 +193,7 @@
             border-radius: 8px;
             margin-bottom: 10px;
             border: 1px solid var(--border-color);
+            transition: all 0.3s;
         }
 
         .task-item.completed span.task-text {
@@ -252,7 +274,6 @@
             box-shadow: 0 0 5px var(--accent-color);
         }
 
-        /* Khung Debug Menu */
         .debug-panel {
             background: rgba(0, 0, 0, 0.2);
             border: 1px dashed var(--accent-color);
@@ -366,7 +387,7 @@
                 </div>
             </div>
 
-            <!-- Thêm Nhiệm Vụ Mới (Tối đa 8 nv) -->
+            <!-- Thêm Nhiệm Vụ Mới -->
             <div class="add-task-box">
                 <div style="font-size: 13px; font-weight: bold; color: var(--accent-color);">Thêm nhiệm vụ mới (Tối đa 8)</div>
                 <div class="add-task-row">
@@ -382,14 +403,19 @@
             </div>
             <ul id="task-list" class="task-list"></ul>
             
-            <!-- DEBUG MENU ĐỂ TEST TÍNH NĂNG -->
+            <!-- DEBUG MENU & TÙY CHỈNH ĐỒ TRONG SHOP -->
             <div class="debug-panel">
-                <h4>🛠️ Debug Menu (Dành để Test)</h4>
-                <div class="debug-buttons">
-                    <button onclick="debugAddCoins(50)">+50 Xu</button>
+                <h4>🛠️ Debug & Quản Lý Shop</h4>
+                <div class="debug-buttons" style="margin-bottom: 8px;">
+                    <button onclick="debugAddCoins(100)">+100 Xu</button>
                     <button onclick="debugUnlockAllTime()">Bỏ qua giờ (Unlock)</button>
                     <button onclick="debugResetTasks()">Reset Trạng Thái NV</button>
-                    <button onclick="resetData()" style="background: var(--danger-color);">Xóa toàn bộ</button>
+                    <button onclick="resetData()" style="background: var(--danger-color);">Xóa dữ liệu</button>
+                </div>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="text" id="shop-item-name" placeholder="Tên món đồ mới..." style="flex:2; padding:4px; font-size:11px; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
+                    <input type="number" id="shop-item-cost" placeholder="Giá xu" style="flex:1; padding:4px; font-size:11px; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
+                    <button onclick="addNewShopItem()" style="font-size:11px; padding:4px 8px;">Thêm vào Shop</button>
                 </div>
             </div>
         </div>
@@ -398,11 +424,11 @@
     <!-- Modal Cửa Hàng Cá Sấu -->
     <div id="shop-modal" class="modal hidden">
         <div class="modal-content">
-            <img src="https://m.media-amazon.com/images/I/61y8B3q93zL._AC_UF894,1000_QL80_.jpg" alt="Chủ Shop Cá Sấu" class="shopkeeper-img">
+            <img src="https://m.media-amazon.com/images/I/61y8B3q93zL._AC_UF894,1000_QL80_.jpg" id="shopkeeper-img-tag" alt="Chủ Shop Cá Sấu" class="shopkeeper-img">
             <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~"</div>
 
             <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">🛍️ Cửa Hàng Đổi Thưởng</div>
-            <ul id="shop-list" class="shop-list" style="max-height: 200px; overflow-y: auto;"></ul>
+            <ul id="shop-list" class="shop-list" style="max-height: 180px; overflow-y: auto;"></ul>
 
             <button class="close-shop-btn" onclick="closeShop()">Đóng Cửa Hàng</button>
         </div>
@@ -416,6 +442,7 @@
             streak: 1,
             theme: 'dark',
             flameSkinActive: false,
+            rgbSkinActive: false,
             lastDate: "",
             tasks: [
                 { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, timeUnlock: "00:00", completed: false },
@@ -427,7 +454,8 @@
                 { id: 1, name: "🎮 30 phút chơi Roblox / Minecraft", cost: 30, type: 'reward' },
                 { id: 2, name: "🎬 Xem phim / Giải trí 1 tập", cost: 20, type: 'reward' },
                 { id: 3, name: "☕ Nghỉ ngơi thư giãn 15 phút", cost: 10, type: 'reward' },
-                { id: 4, name: "🔥 Mở khóa Skin Viền Lửa Cho Hub", cost: 60, type: 'skin' }
+                { id: 4, name: "🔥 Mở khóa Skin Viền Lửa", cost: 60, type: 'flame' },
+                { id: 5, name: "✨ Mở khóa Skin RGB Đổi Màu Siêu Cháy", cost: 100, type: 'rgb' }
             ]
         };
 
@@ -461,6 +489,14 @@
                 osc.frequency.setValueAtTime(440, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(330, audioCtx.currentTime + 0.15);
                 gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.15);
+                gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.3);
@@ -500,10 +536,11 @@
                 root.removeAttribute('data-theme');
             }
 
-            if (appData.flameSkinActive) {
+            container.classList.remove('flame-skin', 'rgb-skin');
+            if (appData.rgbSkinActive) {
+                container.classList.add('rgb-skin');
+            } else if (appData.flameSkinActive) {
                 container.classList.add('flame-skin');
-            } else {
-                container.classList.remove('flame-skin');
             }
         }
 
@@ -553,8 +590,13 @@
                 const now = new Date();
                 const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
                 if (currentTimeStr < task.timeUnlock) {
-                    alert(`Chưa đến giờ! Nhiệm vụ này yêu cầu hoàn thành sau lúc ${task.timeUnlock}.`);
+                    playSound('error');
+                    alert(`⛔ Chưa đến giờ! Nhiệm vụ này yêu cầu hoàn thành sau lúc ${task.timeUnlock}.`);
                     checkbox.checked = false;
+                    
+                    const taskLi = checkbox.closest('.task-item');
+                    taskLi.classList.add('error-border', 'shake-anim');
+                    setTimeout(() => taskLi.classList.remove('error-border', 'shake-anim'), 600);
                     return;
                 }
             }
@@ -625,8 +667,11 @@
                 const li = document.createElement('li');
                 li.className = 'shop-item';
                 li.innerHTML = `
-                    <span style="text-align: left;">${item.name}</span>
-                    <button onclick="buyItem(${item.cost}, '${item.type}')">${item.cost} 🪙</button>
+                    <span style="text-align: left; font-size: 13px;">${item.name}</span>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <button onclick="buyItem(${item.id})" style="padding: 5px 10px; font-size: 13px;">${item.cost} 🪙</button>
+                        <button onclick="deleteShopItem(${item.id})" class="delete-btn" title="Xóa món đồ này">x</button>
+                    </div>
                 `;
                 shopUl.appendChild(li);
             });
@@ -638,24 +683,69 @@
             document.getElementById('shop-modal').classList.add('hidden');
         }
 
-        function buyItem(cost, type) {
-            if (appData.coins >= cost) {
-                appData.coins -= cost;
+        function buyItem(id) {
+            const item = appData.shop.find(s => s.id === id);
+            if (!item) return;
+
+            if (appData.coins >= item.cost) {
+                appData.coins -= item.cost;
                 playSound('buy');
                 
-                if (type === 'skin') {
+                if (item.type === 'rgb' || item.name.includes("RGB")) {
+                    appData.rgbSkinActive = true;
+                    appData.flameSkinActive = false;
+                    alert("✨ Đã kích hoạt Skin RGB Siêu Cháy thành công!");
+                } else if (item.type === 'flame' || item.name.includes("Viền Lửa")) {
                     appData.flameSkinActive = true;
-                    alert("Đã kích hoạt Skin Viền Lửa thành công!");
+                    appData.rgbSkinActive = false;
+                    alert("🔥 Đã kích hoạt Skin Viền Lửa thành công!");
                 } else {
-                    alert("Đổi phần thưởng thành công!");
+                    alert("🎉 Đổi phần thưởng thành công!");
                 }
 
                 saveData();
                 renderUI();
                 openShop();
             } else {
-                alert("Chủ shop cá sấu lắc đầu: Bạn không đủ xu!");
+                playSound('error');
+                alert("❌ Chủ shop cá sấu lắc đầu: Bạn không đủ xu để mua món này!");
             }
+        }
+
+        function addNewShopItem() {
+            const nameInput = document.getElementById('shop-item-name');
+            const costInput = document.getElementById('shop-item-cost');
+            const name = nameInput.value.trim();
+            const cost = parseInt(costInput.value);
+
+            if (!name || isNaN(cost) || cost <= 0) {
+                alert("Vui lòng nhập tên món đồ và giá xu hợp lệ!");
+                return;
+            }
+
+            let type = 'reward';
+            if (name.toLowerCase().includes('rgb')) type = 'rgb';
+            else if (name.toLowerCase().includes('skin') || name.toLowerCase().includes('lửa')) type = 'flame';
+
+            const newItem = {
+                id: Date.now(),
+                name: name,
+                cost: cost,
+                type: type
+            };
+
+            appData.shop.push(newItem);
+            nameInput.value = '';
+            costInput.value = '';
+            saveData();
+            openShop();
+            alert("Đã thêm món đồ mới vào cửa hàng!");
+        }
+
+        function deleteShopItem(id) {
+            appData.shop = appData.shop.filter(s => s.id !== id);
+            saveData();
+            openShop();
         }
 
         function checkAllTasksCompleted() {
@@ -664,7 +754,6 @@
             }
         }
 
-        // --- HÀM DEBUG MENU ---
         function debugAddCoins(amount) {
             appData.coins += amount;
             saveData();
