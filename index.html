@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhiệm vụ hàng ngày & Cửa hàng</title>
-    <!-- Thư viện hiệu ứng pháo hoa Canvas Confetti -->
+    <!-- Thư viện hiệu ứng pháo hoa -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -13,9 +13,27 @@
             --text-color: #f8fafc;
             --accent-color: #38bdf8;
             --accent-hover: #0ea5e9;
-            --success-color: #22c55e;
             --danger-color: #ef4444;
             --border-color: #334155;
+            --item-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Chế độ Sáng (Light Mode) */
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --danger-color: #dc2626;
+            --border-color: #cbd5e1;
+            --item-bg: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Skin Lửa Cho Hub */
+        .flame-skin {
+            border: 2px solid #f97316 !important;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
         }
 
         body {
@@ -28,6 +46,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -38,9 +57,9 @@
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             box-sizing: border-box;
+            transition: background 0.3s, border 0.3s;
         }
 
-        /* Màn hình khóa */
         #lock-screen {
             text-align: center;
         }
@@ -52,14 +71,14 @@
             text-align: center;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            background: #0f172a;
+            background: var(--bg-color);
             color: var(--text-color);
             margin-bottom: 15px;
         }
 
         button {
             background-color: var(--accent-color);
-            color: #0f172a;
+            color: #fff;
             border: none;
             padding: 10px 20px;
             font-size: 16px;
@@ -73,7 +92,6 @@
             background-color: var(--accent-hover);
         }
 
-        /* Giao diện chính */
         .header {
             display: flex;
             justify-content: space-between;
@@ -100,6 +118,19 @@
             100% { transform: scale(1.15); text-shadow: 0 0 15px #ef4444, 0 0 25px #f59e0b; }
         }
 
+        /* Hiệu ứng rung nhẹ khi tích */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake-anim {
+            animation: shake 0.3s ease-in-out;
+        }
+
         .section-title {
             font-size: 18px;
             margin-bottom: 10px;
@@ -116,7 +147,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--item-bg);
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -157,23 +188,35 @@
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
-            background: #0f172a;
+            background: var(--bg-color);
             color: var(--text-color);
+        }
+
+        .top-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
         }
 
         .hidden {
             display: none !important;
         }
-
-        .shop-item button {
-            padding: 6px 12px;
-            font-size: 14px;
-        }
     </style>
 </head>
-<body>
+<body id="body-root">
 
-    <div class="container">
+    <div class="container" id="main-container">
         <!-- Khung Nhập Mật Khẩu -->
         <div id="lock-screen">
             <h2>Mật khẩu truy cập</h2>
@@ -186,6 +229,10 @@
 
         <!-- Khung Ứng Dụng Chính -->
         <div id="app-screen" class="hidden">
+            <div class="top-controls">
+                <button class="icon-btn" onclick="toggleTheme()">☀️ / 🌙 Sáng-Tối</button>
+            </div>
+
             <div class="header">
                 <div>
                     <h2 style="margin: 0;">Nhiệm Vụ Ngày</h2>
@@ -216,10 +263,11 @@
     <script>
         const CORRECT_PASS = "1234";
 
-        // Dữ liệu mặc định
         let appData = JSON.parse(localStorage.getItem('my_daily_app')) || {
             coins: 0,
             streak: 1,
+            theme: 'dark',
+            flameSkinActive: false,
             lastDate: "",
             tasks: [
                 { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, completed: false },
@@ -228,11 +276,38 @@
                 { id: 4, text: "Tập thể dục 15 phút", points: 10, completed: false }
             ],
             shop: [
-                { id: 1, name: "30 phút chơi Roblox / Minecraft", cost: 30 },
-                { id: 2, name: "Xem phim / Giải trí 1 tập", cost: 20 },
-                { id: 3, name: "Đóng băng Streak (Giữ chuỗi)", cost: 50 }
+                { id: 1, name: "30 phút chơi Roblox / Minecraft", cost: 30, type: 'reward' },
+                { id: 2, name: "Xem phim / Giải trí 1 tập", cost: 20, type: 'reward' },
+                { id: 3, name: "🔥 Mở khóa Skin Viền Lửa Cho Hub", cost: 60, type: 'skin' }
             ]
         };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'complete') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'buy') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(330, audioCtx.currentTime + 0.15);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
 
         function checkPassword() {
             const val = document.getElementById('pass-input').value;
@@ -247,15 +322,36 @@
 
         function initApp() {
             checkDailyReset();
+            applyTheme();
             renderUI();
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
         }
 
-        // Kiểm tra xem sang ngày mới chưa để reset nhiệm vụ
+        function toggleTheme() {
+            appData.theme = appData.theme === 'dark' ? 'light' : 'dark';
+            saveData();
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const root = document.getElementById('body-root');
+            const container = document.getElementById('main-container');
+            if (appData.theme === 'light') {
+                root.setAttribute('data-theme', 'light');
+            } else {
+                root.removeAttribute('data-theme');
+            }
+
+            if (appData.flameSkinActive) {
+                container.classList.add('flame-skin');
+            } else {
+                container.classList.remove('flame-skin');
+            }
+        }
+
         function checkDailyReset() {
             const today = new Date().toDateString();
             if (appData.lastDate !== today) {
-                // Nếu sang ngày mới, reset trạng thái hoàn thành task
                 appData.tasks.forEach(t => t.completed = false);
                 appData.lastDate = today;
                 saveData();
@@ -269,8 +365,8 @@
         function renderUI() {
             document.getElementById('coins').innerText = appData.coins;
             document.getElementById('streak').innerText = appData.streak;
+            applyTheme();
 
-            // Render Task List
             const taskUl = document.getElementById('task-list');
             taskUl.innerHTML = '';
             appData.tasks.forEach(task => {
@@ -278,7 +374,7 @@
                 li.className = `task-item ${task.completed ? 'completed' : ''}`;
                 li.innerHTML = `
                     <div class="task-left">
-                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})">
+                        <input type="checkbox" id="chk-${task.id}" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, event)">
                         <span>${task.text} (+${task.points}đ)</span>
                     </div>
                     <button class="delete-btn" onclick="deleteTask(${task.id})">Xóa</button>
@@ -286,7 +382,6 @@
                 taskUl.appendChild(li);
             });
 
-            // Render Shop List
             const shopUl = document.getElementById('shop-list');
             shopUl.innerHTML = '';
             appData.shop.forEach(item => {
@@ -294,25 +389,37 @@
                 li.className = 'shop-item';
                 li.innerHTML = `
                     <span>${item.name}</span>
-                    <button onclick="buyItem(${item.cost})">${item.cost} 🪙</button>
+                    <button onclick="buyItem(${item.cost}, '${item.type}')">${item.cost} 🪙</button>
                 `;
                 shopUl.appendChild(li);
             });
         }
 
-        function toggleTask(id) {
+        function toggleTask(id, event) {
             const task = appData.tasks.find(t => t.id === id);
+            const checkbox = event.target;
+            
+            // Hiệu ứng rung nhẹ mục tương ứng
+            checkbox.classList.add('shake-anim');
+            setTimeout(() => checkbox.classList.remove('shake-anim'), 300);
+
             if (task) {
                 task.completed = !task.completed;
                 if (task.completed) {
                     appData.coins += task.points;
+                    playSound('complete');
+                    
+                    // Bắn các dải màu lấp lánh nhẹ quanh vị trí tích
+                    confetti({
+                        particleCount: 30,
+                        spread: 50,
+                        origin: { y: 0.7 }
+                    });
                 } else {
                     appData.coins -= task.points;
                 }
                 saveData();
                 renderUI();
-
-                // Kiểm tra xem đã hoàn thành toàn bộ nhiệm vụ trong ngày chưa để bắn pháo hoa
                 checkAllTasksCompleted();
             }
         }
@@ -340,12 +447,20 @@
             renderUI();
         }
 
-        function buyItem(cost) {
+        function buyItem(cost, type) {
             if (appData.coins >= cost) {
                 appData.coins -= cost;
+                playSound('buy');
+                
+                if (type === 'skin') {
+                    appData.flameSkinActive = true;
+                    alert("Đã kích hoạt Skin Viền Lửa thành công! Giao diện Hub cực cháy!");
+                } else {
+                    alert("Đổi phần thưởng thành công! Chúc bạn chơi game vui vẻ!");
+                }
+
                 saveData();
                 renderUI();
-                alert("Đổi phần thưởng thành công! Chúc bạn chơi game vui vẻ!");
             } else {
                 alert("Bạn không đủ xu để đổi phần thưởng này!");
             }
@@ -353,10 +468,9 @@
 
         function checkAllTasksCompleted() {
             if (appData.tasks.length > 0 && appData.tasks.every(t => t.completed)) {
-                // Bắn pháo hoa chúc mừng
                 confetti({
-                    particleCount: 120,
-                    spread: 80,
+                    particleCount: 150,
+                    spread: 90,
                     origin: { y: 0.6 }
                 });
             }
