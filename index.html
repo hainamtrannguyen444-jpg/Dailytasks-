@@ -1,78 +1,967 @@
-/* Tùy chỉnh hình nền / video nền toàn màn hình */
-#bg-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    overflow: hidden;
-}
-#bg-container img, #bg-container video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhiệm vụ hàng ngày & Pet Shop Cá Sấu</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger-color: #ef4444;
+            --border-color: #334155;
+            --item-bg: rgba(255, 255, 255, 0.03);
+            --neon-glow: 0 0 15px rgba(56, 189, 248, 0.5);
+            --border-neon: 2px solid #38bdf8;
+            --btn-custom-color: #38bdf8;
+        }
 
-/* Khu vực riêng cho Pet được phóng to */
-.pet-section {
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid #ff7675;
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    margin: 20px 0;
-    position: relative;
-    cursor: pointer;
-    user-select: none;
-}
-.pet-avatar-container {
-    position: relative;
-    display: inline-block;
-}
-.pet-avatar {
-    width: 120px; /* Phóng to pet */
-    height: 120px;
-    object-fit: contain;
-    transition: transform 0.2s;
-}
-.pet-avatar:active {
-    transform: scale(0.95);
-}
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --accent-color: #0077ff;
+            --accent-hover: #005bb5;
+            --danger-color: #dc2626;
+            --border-color: #cbd5e1;
+            --item-bg: rgba(0, 0, 0, 0.02);
+            --neon-glow: 0 0 20px rgba(0, 119, 255, 0.6);
+            --border-neon: 2px solid #0077ff;
+            --btn-custom-color: #0077ff;
+        }
 
-/* Thanh thể lực */
-.stamina-bar-container {
-    width: 100%;
-    background: #444;
-    border-radius: 8px;
-    height: 12px;
-    margin-top: 10px;
-    overflow: hidden;
-}
-.stamina-bar-fill {
-    height: 100%;
-    background: #00b894;
-    width: 100%;
-    transition: width 0.3s linear;
-}
+        [data-theme="oled"] {
+            --bg-color: #000000;
+            --card-bg: #090d0a;
+            --text-color: #f8fafc;
+            --accent-color: #22c55e;
+            --accent-hover: #16a34a;
+            --border-color: #14532d;
+            --neon-glow: 0 0 20px rgba(34, 197, 94, 0.7);
+            --border-neon: 2px solid #22c55e;
+            --btn-custom-color: #22c55e;
+        }
 
-/* Hiệu ứng trái tim bay lên khi xoa đầu */
-.floating-heart {
-    position: absolute;
-    color: #ff4757;
-    font-size: 24px;
-    font-weight: bold;
-    animation: floatUp 1s ease-out forwards;
-    pointer-events: none;
-    z-index: 10;
-}
-@keyframes floatUp {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(0.8);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-60px) scale(1.4);
-    }
-}
+        /* Đổi màu toàn bộ chữ theo biến tùy chỉnh */
+        body, *, body span, body label, body p, body h1, body h2, body h3 {
+            color: var(--text-color);
+        }
+
+        /* Phông nền ảnh / video tùy chỉnh phía sau */
+        #bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+        #bg-container img, #bg-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .container.flame-skin {
+            border: 2px solid #f97316 !important;
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), inset 0 0 10px rgba(249, 115, 22, 0.5) !important;
+        }
+
+        @keyframes rgbCycle {
+            0% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), inset 0 0 12px rgba(239, 68, 68, 0.6); }
+            20% { border-color: #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(245, 158, 11, 0.6); }
+            40% { border-color: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.9), inset 0 0 12px rgba(34, 197, 94, 0.6); }
+            60% { border-color: #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.9), inset 0 0 12px rgba(56, 189, 248, 0.6); }
+            80% { border-color: #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.9), inset 0 0 12px rgba(168, 85, 247, 0.6); }
+            100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), inset 0 0 12px rgba(239, 68, 68, 0.6); }
+        }
+
+        .container.rgb-skin {
+            animation: rgbCycle 3s linear infinite !important;
+        }
+
+        @keyframes rgbButtonCycle {
+            0% { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+            25% { background-color: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+            50% { background-color: #22c55e; box-shadow: 0 0 10px #22c55e; }
+            75% { background-color: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+            100% { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        }
+
+        .custom-btn {
+            background-color: var(--btn-custom-color) !important;
+            box-shadow: 0 0 10px var(--btn-custom-color) !important;
+            color: #ffffff !important;
+            transition: all 0.2s;
+        }
+
+        .custom-btn.rgb-buttons {
+            animation: rgbButtonCycle 3s linear infinite !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            border: var(--border-neon);
+            box-shadow: var(--neon-glow);
+            box-sizing: border-box;
+        }
+
+        #lock-screen { text-align: center; }
+        #lock-screen input {
+            width: 80%; padding: 12px; font-size: 18px; text-align: center;
+            border-radius: 8px; border: var(--border-neon); background: var(--bg-color); margin-bottom: 15px;
+        }
+
+        button { border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
+        }
+
+        .stats { display: flex; gap: 15px; font-size: 15px; font-weight: bold; }
+        .fire-streak { color: #f97316 !important; animation: burn 1.5s infinite alternate; }
+
+        @keyframes burn {
+            0% { transform: scale(1); text-shadow: 0 0 5px #f97316; }
+            100% { transform: scale(1.15); text-shadow: 0 0 15px #ef4444, 0 0 25px #f59e0b; }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
+        .shake-anim { animation: shake 0.3s ease-in-out; }
+
+        .section-title {
+            font-size: 18px; margin-bottom: 10px; color: var(--accent-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .task-list, .shop-list { list-style: none; padding: 0; margin: 0 0 20px 0; }
+        .task-item, .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--item-bg); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color);
+        }
+
+        .task-item.completed span.task-text { text-decoration: line-through; color: #94a3b8 !important; }
+        .task-left { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+        .task-main { display: flex; align-items: center; gap: 10px; }
+        .task-time-label { font-size: 11px; color: var(--accent-color) !important; margin-left: 24px; }
+
+        .delete-btn { background: transparent !important; color: var(--danger-color) !important; padding: 4px 8px; font-size: 14px; box-shadow: none !important; }
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
+
+        .add-task-box {
+            display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
+            background: var(--item-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);
+        }
+        .add-task-row { display: flex; gap: 8px; }
+        .add-task-box input, .add-task-box select {
+            flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color);
+        }
+
+        .top-controls { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg); width: 90%; max-width: 420px; padding: 24px;
+            border-radius: 16px; border: var(--border-neon); box-shadow: var(--neon-glow); text-align: center; position: relative; max-height: 90vh; overflow-y: auto;
+        }
+
+        /* Khung riêng cho Pet được phóng to */
+        .pet-section {
+            background: var(--item-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+            transition: transform 0.1s;
+        }
+        .pet-section:active { transform: scale(0.98); }
+
+        .pet-avatar-box {
+            width: 130px; height: 130px; margin: 0 auto 10px auto; border-radius: 50%;
+            border: 3px solid #f97316; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            background: #111; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+            transition: all 0.2s;
+        }
+        .pet-avatar-box.dragover {
+            border-color: #22c55e; background: rgba(34, 197, 94, 0.2); transform: scale(1.05);
+        }
+        .pet-avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Thanh thể lực Pet */
+        .stamina-bar-container {
+            width: 100%; background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 6px; height: 12px; margin-top: 8px; overflow: hidden;
+        }
+        .stamina-bar-fill {
+            height: 100%; background: #22c55e; width: 100%; transition: width 0.5s linear;
+        }
+
+        /* Hiệu ứng trái tim bay lên khi xoa đầu Pet */
+        .floating-heart {
+            position: absolute; color: #ef4444; font-size: 20px; font-weight: bold;
+            animation: floatUp 1s ease-out forwards; pointer-events: none; z-index: 50;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.4); }
+        }
+
+        .dialogue-box {
+            background: var(--item-bg); border: 1px solid var(--border-color); padding: 8px 12px;
+            border-radius: 10px; font-style: italic; font-weight: bold; color: #f59e0b !important; margin-bottom: 12px; font-size: 13px;
+        }
+
+        .close-shop-btn { background: var(--danger-color) !important; color: white !important; margin-top: 15px; width: 100%; box-shadow: none !important; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body id="body-root">
+
+    <!-- Phông nền đằng sau tùy chỉnh (Ảnh/Video) -->
+    <div id="bg-container">
+        <img id="custom-bg-img" src="" style="display: none;" alt="Background">
+        <video id="custom-bg-video" autoplay muted loop style="display: none;"></video>
+    </div>
+
+    <div class="container" id="main-container">
+        <!-- Khung Nhập Mật Khẩu -->
+        <div id="lock-screen">
+            <h2>Mật khẩu truy cập</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Mặc định: 1234</p>
+            <input type="password" id="pass-input" placeholder="Nhập mật khẩu...">
+            <br>
+            <button class="custom-btn" onclick="checkPassword()">Truy cập</button>
+            <p id="error-msg" style="color: var(--danger-color); margin-top: 10px;"></p>
+        </div>
+
+        <!-- Khung Ứng Dụng Chính -->
+        <div id="app-screen" class="hidden">
+            <div class="top-controls">
+                <button class="custom-btn" onclick="openShop()" style="font-size: 13px; padding: 8px 12px; border-radius: 6px; flex: 1;">🐊 Pet Shop</button>
+                <button class="custom-btn" onclick="openSettings()" style="font-size: 13px; padding: 8px 12px; border-radius: 6px; flex: 1;">⚙️ Cài Đặt</button>
+            </div>
+
+            <!-- PHẦN RIÊNG CHO PET (Phóng to, Xoa đầu +10 XP mỗi 5s, Thanh thể lực tụt trong 5 tiếng) -->
+            <div class="pet-section" id="petSection" onclick="petHeadPat(event)" title="Bấm để xoa đầu Pet nhận +10 XP!">
+                <div style="font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 6px;">🐊 Thú Cưng Cá Sấu</div>
+                <div class="pet-avatar-box">
+                    <img id="pet-avatar-img" src="https://i.imgur.com/8Qz462Y.png" alt="Pet Cá Sấu" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616408.png'">
+                </div>
+                <div style="font-size: 12px; color: #f59e0b; margin-bottom: 6px;">✨ Chạm để xoa đầu (+10 XP / 5 giây)</div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
+                    <span>🐾 Lv.<span id="pet-level-text">1</span></span>
+                    <span>⚡ Thể lực: <span id="staminaText">100%</span></span>
+                </div>
+                <div class="stamina-bar-container">
+                    <div class="stamina-bar-fill" id="staminaFill"></div>
+                </div>
+            </div>
+
+            <div class="header">
+                <div>
+                    <h2 style="margin: 0;">Nhiệm Vụ Ngày</h2>
+                    <span id="current-date" style="font-size: 12px; color: #94a3b8;"></span>
+                </div>
+                <div class="stats">
+                    <div>🪙 <span id="coins">0</span></div>
+                    <div class="fire-streak">🔥 <span id="streak">0</span> ngày</div>
+                </div>
+            </div>
+
+            <!-- Thêm Nhiệm Vụ -->
+            <div class="add-task-box">
+                <div style="font-size: 13px; font-weight: bold; color: var(--accent-color);">Thêm nhiệm vụ mới (Tối đa 8)</div>
+                <div class="add-task-row">
+                    <input type="text" id="new-task-text" placeholder="Tên nhiệm vụ...">
+                    <input type="time" id="new-task-time">
+                </div>
+                <button class="custom-btn" onclick="addNewTask()">Thêm Nhiệm Vụ</button>
+            </div>
+
+            <div class="section-title">
+                <span>Danh sách nhiệm vụ</span>
+                <span id="task-count-label" style="font-size: 13px; color: #94a3b8;">0/8</span>
+            </div>
+            <ul id="task-list" class="task-list"></ul>
+        </div>
+    </div>
+
+    <!-- Modal Cài Đặt (Settings) -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--accent-color);">⚙️ Cài Đặt Giao Diện & Hệ Thống</h3>
+            
+            <div style="text-align: left; display: flex; flex-direction: column; gap: 12px; font-size: 13px; background: var(--item-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                <button class="custom-btn" onclick="cycleTheme()" style="width: 100%; font-size: 13px; padding: 8px;">☀️ / 🌙 Đổi Giao Diện (Sáng/Tối/OLED)</button>
+                
+                <!-- Tùy chỉnh Phông nền Ảnh/Video mọi định dạng -->
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-weight: bold;">🖼️ Đổi Phông Nền (Ảnh/Video mọi định dạng):</label>
+                    <input type="file" id="bgFilePicker" accept="image/*,video/*" onchange="handleBgUpload(event)" style="width: 100%; font-size: 12px;">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Màu nút:</span>
+                    <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:40px; height:25px; background:none;">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Màu chữ:</span>
+                    <input type="color" id="text-color-picker" value="#f8fafc" onchange="changeTextColor(this.value)" style="cursor: pointer; border:none; width:40px; height:25px; background:none;">
+                </div>
+
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="rgb-btn-toggle" onclick="toggleRGBButtons(this)" style="width: 16px; height: 16px;"> 🌈 Hiệu ứng Nút RGB
+                </label>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="custom-btn" onclick="debugAddCoins(100)" style="flex:1; font-size: 12px; padding: 8px;">+100 Xu</button>
+                    <button class="custom-btn" onclick="debugResetTasks()" style="flex:1; font-size: 12px; padding: 8px;">Reset NV</button>
+                </div>
+                <button class="delete-btn" onclick="resetData()" style="background:var(--danger-color); color:white; padding:8px; width:100%; border-radius: 8px;">Xóa toàn bộ dữ liệu</button>
+            </div>
+
+            <button class="close-shop-btn" onclick="closeSettings()">Đóng Cài Đặt</button>
+        </div>
+    </div>
+
+    <!-- Modal Pet Shop & Thức Ăn -->
+    <div id="shop-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="pet-avatar-box" id="drop-zone" onclick="document.getElementById('pet-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" title="Kéo thả file ảnh vào đây hoặc bấm để chọn">
+                <img id="pet-shop-avatar" src="https://i.imgur.com/8Qz462Y.png" alt="Pet Cá Sấu" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616408.png'">
+            </div>
+            <!-- Chấp nhận mọi loại định dạng ảnh bằng image/* -->
+            <input type="file" id="pet-file-input" accept="image/*" style="display: none;" onchange="handlePetImageUpload(event)">
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Kéo thả bất kỳ file ảnh nào vào đây hoặc bấm để thay đổi ảnh Pet)</div>
+
+            <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~ Mua thức ăn bồi bổ cho tôi mau lên!"</div>
+
+            <div style="background: var(--item-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>🐾 Cấp độ Pet: <b id="pet-shop-level-text" style="color: var(--accent-color);">Lv.1</b></span>
+                    <span>⚡ Buff: <b id="pet-buff-text" style="color: #22c55e;">+10% xu</b></span>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; height: 10px; overflow: hidden; position: relative;">
+                    <div id="pet-xp-bar" style="background: #22c55e; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; text-align: right;" id="pet-xp-text">XP: 0 / 100</div>
+            </div>
+
+            <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">🛍️ Cửa Hàng Thức Ăn & Trang Bị</div>
+            <ul id="shop-list" class="shop-list" style="max-height: 180px; overflow-y: auto;"></ul>
+
+            <button class="close-shop-btn" onclick="closeShop()">Đóng Cửa Hàng</button>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PASS = "1234";
+
+        let appData = JSON.parse(localStorage.getItem('my_daily_app_v5')) || {
+            coins: 0,
+            streak: 1,
+            theme: 'dark',
+            customTextColor: '',
+            flameSkinActive: false,
+            rgbSkinActive: false,
+            customBtnColor: '#38bdf8',
+            rgbButtonsActive: false,
+            petLevel: 1,
+            petXp: 0,
+            petCustomImage: '',
+            bgType: '',
+            bgData: '',
+            lastDate: "",
+            staminaStartTime: Date.now(),
+            tasks: [
+                { id: 1, text: "Hoàn thành bài tập về nhà", points: 10, timeUnlock: "00:00", completed: false },
+                { id: 2, text: "Đọc sách 20 phút", points: 10, timeUnlock: "00:00", completed: false },
+                { id: 3, text: "Dọn dẹp góc học tập", points: 5, timeUnlock: "00:00", completed: false },
+                { id: 4, text: "Tập thể dục 15 phút", points: 10, timeUnlock: "00:00", completed: false }
+            ],
+            shop: [
+                { id: 1, name: "🎮 30 phút chơi game", cost: 30, type: 'reward' },
+                { id: 2, name: "🍖 Thức Ăn Thường (Cấp 1 - +30 XP)", cost: 15, type: 'food', xp: 30 },
+                { id: 3, name: "🥩 Thức Ăn Cao Cấp (Cấp 2 - +80 XP)", cost: 35, type: 'food', xp: 80 },
+                { id: 4, name: "👑 Thức Ăn Siêu Cấp (Cấp 3 - +200 XP)", cost: 75, type: 'food', xp: 200 },
+                { id: 5, name: "🔥 Mở khóa Skin Viền Lửa", cost: 60, type: 'flame' },
+                { id: 6, name: "✨ Mở khóa Skin RGB Khung", cost: 100, type: 'rgb' }
+            ]
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function triggerVibration(pattern = 40) {
+            if ("vibrate" in navigator) {
+                try { navigator.vibrate(pattern); } catch (e) {}
+            }
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'complete') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'bell') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1046.5, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'buy') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.15);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'delete') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'heart') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(830.61, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            }
+        }
+
+        function checkPassword() {
+            triggerVibration(50);
+            const val = document.getElementById('pass-input').value;
+            if(val === CORRECT_PASS) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                initApp();
+            } else {
+                playSound('error');
+                document.getElementById('error-msg').innerText = "Sai mật khẩu! (1234)";
+            }
+        }
+
+        function initApp() {
+            checkDailyReset();
+            applyTheme();
+            applyButtonCustomization();
+            applyTextCustomization();
+            applyBackground();
+            updatePetDisplay();
+            renderUI();
+            startStaminaInterval();
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('vi-VN');
+        }
+
+        // --- XỬ LÝ PHÔNG NỀN ẢNH / VIDEO ---
+        function handleBgUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                appData.bgData = e.target.result;
+                appData.bgType = file.type;
+                saveData();
+                applyBackground();
+                triggerVibration(40);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyBackground() {
+            const bgImg = document.getElementById('custom-bg-img');
+            const bgVideo = document.getElementById('custom-bg-video');
+            if (!appData.bgData) return;
+
+            if (appData.bgType.startsWith('video/')) {
+                bgVideo.src = appData.bgData;
+                bgVideo.style.display = 'block';
+                bgImg.style.display = 'none';
+            } else {
+                bgImg.src = appData.bgData;
+                bgImg.style.display = 'block';
+                bgVideo.style.display = 'none';
+                bgVideo.pause();
+            }
+        }
+
+        // --- TÍNH NĂNG XOA ĐẦU PET (MỖI 5s, +10 XP, TRÁI TIM BAY) ---
+        let lastPatTime = 0;
+        function petHeadPat(e) {
+            const now = Date.now();
+            if (now - lastPatTime < 5000) {
+                const remainingSec = Math.ceil((5000 - (now - lastPatTime)) / 1000);
+                triggerVibration(20);
+                return; // Chờ đủ 5 giây
+            }
+            lastPatTime = now;
+            triggerVibration([50, 50]);
+            playSound('heart');
+
+            // Cộng 10 XP cho Pet
+            addPetXp(10);
+
+            // Tạo hiệu ứng trái tim bay lên
+            createFloatingHeart(e);
+        }
+
+        function createFloatingHeart(e) {
+            const petSection = document.getElementById('petSection');
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.innerHTML = '❤️ +10 XP';
+
+            const rect = petSection.getBoundingClientRect();
+            const x = e.clientX ? (e.clientX - rect.left) : (rect.width / 2);
+            const y = e.clientY ? (e.clientY - rect.top) : 50;
+
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+
+            petSection.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 1000);
+        }
+
+        // --- THANH THỂ LỰC (HẾT SAU 5 TIẾNG HOẠT ĐỘNG) ---
+        const MAX_STAMINA_TIME = 5 * 60 * 60 * 1000; // 5 tiếng bằng mili-giây
+        function startStaminaInterval() {
+            setInterval(updateStaminaBar, 1000);
+            updateStaminaBar();
+        }
+
+        function updateStaminaBar() {
+            const elapsed = Date.now() - appData.staminaStartTime;
+            let remaining = MAX_STAMINA_TIME - elapsed;
+            if (remaining < 0) remaining = 0;
+
+            let percentage = (remaining / MAX_STAMINA_TIME) * 100;
+            const fill = document.getElementById('staminaFill');
+            const text = document.getElementById('staminaText');
+            if (fill && text) {
+                fill.style.width = `${percentage}%`;
+                text.innerText = `${Math.max(0, Math.floor(percentage))}%`;
+            }
+        }
+
+        function cycleTheme() {
+            triggerVibration(30);
+            if (appData.theme === 'dark') appData.theme = 'light';
+            else if (appData.theme === 'light') appData.theme = 'oled';
+            else appData.theme = 'dark';
+            saveData();
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const root = document.getElementById('body-root');
+            const container = document.getElementById('main-container');
+            
+            root.removeAttribute('data-theme');
+            if (appData.theme === 'light') {
+                root.setAttribute('data-theme', 'light');
+            } else if (appData.theme === 'oled') {
+                root.setAttribute('data-theme', 'oled');
+            }
+
+            container.classList.remove('flame-skin', 'rgb-skin');
+            if (appData.rgbSkinActive) container.classList.add('rgb-skin');
+            else if (appData.flameSkinActive) container.classList.add('flame-skin');
+        }
+
+        function changeButtonColor(color) {
+            appData.customBtnColor = color;
+            appData.rgbButtonsActive = false;
+            saveData();
+            applyButtonCustomization();
+        }
+
+        function changeTextColor(color) {
+            appData.customTextColor = color;
+            saveData();
+            applyTextCustomization();
+        }
+
+        function toggleRGBButtons(checkbox) {
+            triggerVibration(30);
+            appData.rgbButtonsActive = checkbox.checked;
+            saveData();
+            applyButtonCustomization();
+        }
+
+        function applyButtonCustomization() {
+            document.documentElement.style.setProperty('--btn-custom-color', appData.customBtnColor);
+            const colorPicker = document.getElementById('btn-color-picker');
+            if(colorPicker) colorPicker.value = appData.customBtnColor;
+
+            const rgbToggle = document.getElementById('rgb-btn-toggle');
+            if(rgbToggle) rgbToggle.checked = appData.rgbButtonsActive;
+
+            const buttons = document.querySelectorAll('.custom-btn');
+            buttons.forEach(btn => {
+                if (appData.rgbButtonsActive) btn.classList.add('rgb-buttons');
+                else btn.classList.remove('rgb-buttons');
+            });
+        }
+
+        function applyTextCustomization() {
+            const textColorPicker = document.getElementById('text-color-picker');
+            if(appData.customTextColor) {
+                if(textColorPicker) textColorPicker.value = appData.customTextColor;
+                document.documentElement.style.setProperty('--text-color', appData.customTextColor);
+            } else {
+                let defaultColor = appData.theme === 'light' ? '#0f172a' : '#f8fafc';
+                document.documentElement.style.setProperty('--text-color', defaultColor);
+                if(textColorPicker) textColorPicker.value = defaultColor;
+            }
+        }
+
+        function openSettings() {
+            triggerVibration(30);
+            playSound('bell');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            triggerVibration(20);
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) { processImageFile(files[0]); }
+        }
+
+        function handlePetImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) { processImageFile(file); }
+        }
+
+        function processImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                triggerVibration([50, 50, 50]);
+                playSound('error');
+                alert("⛔ Vui lòng chỉ tải lên file định dạng hình ảnh!");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                appData.petCustomImage = e.target.result;
+                saveData();
+                updatePetDisplay();
+                triggerVibration(60);
+                playSound('buy');
+                alert("✨ Đã cập nhật ảnh Pet thành công!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePetDisplay() {
+            const imgMain = document.getElementById('pet-avatar-img');
+            const imgShop = document.getElementById('pet-shop-avatar');
+            const imgSrc = appData.petCustomImage ? appData.petCustomImage : "https://i.imgur.com/8Qz462Y.png";
+            
+            if(imgMain) imgMain.src = imgSrc;
+            if(imgShop) imgShop.src = imgSrc;
+
+            document.getElementById('pet-level-text').innerText = appData.petLevel;
+            const shopLv = document.getElementById('pet-shop-level-text');
+            if(shopLv) shopLv.innerText = `Lv.${appData.petLevel}`;
+            
+            const buffText = document.getElementById('pet-buff-text');
+            if(buffText) buffText.innerText = `+${appData.petLevel * 10}% xu`;
+
+            const maxXP = appData.petLevel * 100;
+            const percent = Math.min(100, (appData.petXp / maxXP) * 100);
+            const xpBar = document.getElementById('pet-xp-bar');
+            if(xpBar) xpBar.style.width = `${percent}%`;
+            const xpText = document.getElementById('pet-xp-text');
+            if(xpText) xpText.innerText = `XP: ${appData.petXp} / ${maxXP}`;
+        }
+
+        function addPetXp(amount) {
+            appData.petXp += amount;
+            let maxXP = appData.petLevel * 100;
+            if (appData.petXp >= maxXP) {
+                appData.petXp -= maxXP;
+                appData.petLevel++;
+                triggerVibration([100, 50, 100]);
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+                alert(`🎉 Chúc mừng Pet đã thăng lên Lv.${appData.petLevel}! Tăng mạnh % điểm thưởng nhiệm vụ.`);
+            }
+            saveData();
+            updatePetDisplay();
+        }
+
+        function checkDailyReset() {
+            const today = new Date().toDateString();
+            if (appData.lastDate !== today) {
+                appData.tasks.forEach(t => t.completed = false);
+                appData.lastDate = today;
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('my_daily_app_v5', JSON.stringify(appData));
+        }
+
+        function renderUI() {
+            document.getElementById('coins').innerText = appData.coins;
+            document.getElementById('streak').innerText = appData.streak;
+            document.getElementById('task-count-label').innerText = `${appData.tasks.length}/8`;
+            applyTheme();
+            applyButtonCustomization();
+            applyTextCustomization();
+
+            const taskUl = document.getElementById('task-list');
+            taskUl.innerHTML = '';
+            appData.tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <div class="task-left">
+                        <div class="task-main">
+                            <input type="checkbox" id="chk-${task.id}" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, event)">
+                            <span class="task-text">${task.text} (+${task.points}đ)</span>
+                        </div>
+                        ${task.timeUnlock && task.timeUnlock !== "00:00" ? `<span class="task-time-label">⏰ Mở khóa lúc: ${task.timeUnlock}</span>` : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Xóa</button>
+                `;
+                taskUl.appendChild(li);
+            });
+        }
+
+        function toggleTask(id, event) {
+            const task = appData.tasks.find(t => t.id === id);
+            const checkbox = event.target;
+
+            if (task && !task.completed && task.timeUnlock && task.timeUnlock !== "00:00") {
+                const now = new Date();
+                const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                if (currentTimeStr < task.timeUnlock) {
+                    triggerVibration([50, 50, 50]);
+                    playSound('error');
+                    alert(`⛔ Chưa đến giờ! Mở khóa lúc ${task.timeUnlock}.`);
+                    checkbox.checked = false;
+                    const taskLi = checkbox.closest('.task-item');
+                    taskLi.classList.add('shake-anim');
+                    setTimeout(() => taskLi.classList.remove('shake-anim'), 300);
+                    return;
+                }
+            }
+
+            if (task) {
+                task.completed = !task.completed;
+                let earnedPoints = task.points * (1 + ((appData.petLevel - 1) * 0.1));
+
+                if (task.completed) {
+                    appData.coins += Math.round(earnedPoints);
+                    triggerVibration(40);
+                    playSound('complete');
+                    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+                } else {
+                    appData.coins -= Math.round(earnedPoints);
+                    if (appData.coins < 0) appData.coins = 0;
+                    triggerVibration(20);
+                }
+                saveData();
+                renderUI();
+            }
+        }
+
+        function addNewTask() {
+            if (appData.tasks.length >= 8) {
+                triggerVibration(50);
+                playSound('error');
+                alert("Tối đa 8 nhiệm vụ!");
+                return;
+            }
+            const input = document.getElementById('new-task-text');
+            const timeInput = document.getElementById('new-task-time');
+            const text = input.value.trim();
+            if (!text) return;
+
+            triggerVibration(30);
+            playSound('bell');
+            appData.tasks.push({
+                id: Date.now(), text: text, points: 10, timeUnlock: timeInput.value || "00:00", completed: false
+            });
+            input.value = ''; timeInput.value = '';
+            saveData();
+            renderUI();
+        }
+
+        function deleteTask(id) {
+            triggerVibration([40, 40]);
+            playSound('delete');
+            appData.tasks = appData.tasks.filter(t => t.id !== id);
+            saveData();
+            renderUI();
+        }
+
+        function openShop() {
+            triggerVibration(30);
+            playSound('bell');
+            updatePetDisplay();
+
+            const shopUl = document.getElementById('shop-list');
+            shopUl.innerHTML = '';
+            appData.shop.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'shop-item';
+                li.innerHTML = `
+                    <span style="text-align: left; font-size: 13px;">${item.name}</span>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <button class="custom-btn" onclick="buyItem(${item.id})" style="padding: 5px 10px; font-size: 12px;">${item.cost} 🪙</button>
+                        ${item.type !== 'food' ? `<button onclick="deleteShopItem(${item.id})" class="delete-btn">x</button>` : ''}
+                    </div>
+                `;
+                shopUl.appendChild(li);
+            });
+
+            document.getElementById('shop-modal').classList.remove('hidden');
+        }
+
+        function closeShop() { 
+            triggerVibration(20);
+            document.getElementById('shop-modal').classList.add('hidden'); 
+        }
+
+        function buyItem(id) {
+            const item = appData.shop.find(s => s.id === id);
+            if (!item) return;
+
+            if (appData.coins >= item.cost) {
+                appData.coins -= item.cost;
+                triggerVibration(50);
+                playSound('buy');
+
+                if (item.type === 'food') {
+                    addPetXp(item.xp);
+                    alert(`🍖 Pet đã ăn ngon lành và nhận được +${item.xp} XP!`);
+                } else if (item.type === 'rgb') {
+                    appData.rgbSkinActive = true;
+                    appData.flameSkinActive = false;
+                    alert("✨ Đã kích hoạt Skin RGB Khung!");
+                } else if (item.type === 'flame') {
+                    appData.flameSkinActive = true;
+                    appData.rgbSkinActive = false;
+                    alert("🔥 Đã kích hoạt Skin Viền Lửa!");
+                } else {
+                    alert("🎉 Đổi thưởng thành công!");
+                }
+
+                saveData();
+                renderUI();
+                openShop();
+            } else {
+                triggerVibration([50, 50, 50]);
+                playSound('error');
+                alert("❌ Bạn không đủ xu để mua món này!");
+            }
+        }
+
+        function deleteShopItem(id) {
+            triggerVibration([40, 40]);
+            playSound('delete');
+            appData.shop = appData.shop.filter(s => s.id !== id);
+            saveData();
+            openShop();
+        }
+
+        function debugAddCoins(amount) {
+            triggerVibration(30);
+            appData.coins += amount;
+            saveData();
+            renderUI();
+        }
+
+        function debugResetTasks() {
+            triggerVibration(30);
+            appData.tasks.forEach(t => t.completed = false);
+            saveData();
+            renderUI();
+        }
+
+        function resetData() {
+            if(confirm("Xóa sạch dữ liệu?")) {
+                triggerVibration([80, 80]);
+                playSound('delete');
+                localStorage.removeItem('my_daily_app_v5');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
