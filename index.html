@@ -164,16 +164,7 @@
             flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);
         }
 
-        .top-controls { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-        .icon-btn { border: var(--border-neon); color: var(--text-color); padding: 6px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; }
-
-        .debug-panel {
-            background: rgba(0, 0, 0, 0.2); border: 1px dashed var(--accent-color);
-            padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 12px;
-        }
-        .debug-panel h4 { margin: 0 0 8px 0; color: var(--accent-color); }
-        .debug-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
-        .debug-buttons button { font-size: 11px; padding: 5px 8px; }
+        .top-controls { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -191,9 +182,7 @@
             transition: all 0.2s;
         }
         .pet-img-box.dragover {
-            border-color: #22c55e;
-            background: rgba(34, 197, 94, 0.2);
-            transform: scale(1.05);
+            border-color: #22c55e; background: rgba(34, 197, 94, 0.2); transform: scale(1.05);
         }
         .pet-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -222,8 +211,8 @@
         <!-- Khung Ứng Dụng Chính -->
         <div id="app-screen" class="hidden">
             <div class="top-controls">
-                <button class="icon-btn custom-btn" onclick="openShop()">🐊 Pet Shop Cá Sấu</button>
-                <button class="icon-btn custom-btn" onclick="cycleTheme()">☀️ / 🌙 Đổi Giao Diện</button>
+                <button class="custom-btn" onclick="openShop()" style="font-size: 13px; padding: 8px 12px; border-radius: 6px; flex: 1;">🐊 Pet Shop</button>
+                <button class="custom-btn" onclick="openSettings()" style="font-size: 13px; padding: 8px 12px; border-radius: 6px; flex: 1;">⚙️ Cài Đặt</button>
             </div>
 
             <div class="header">
@@ -252,51 +241,61 @@
                 <span id="task-count-label" style="font-size: 13px; color: #94a3b8;">0/8</span>
             </div>
             <ul id="task-list" class="task-list"></ul>
+        </div>
+    </div>
+
+    <!-- Modal Cài Đặt (Settings) -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--accent-color);">⚙️ Cài Đặt Giao Diện & Hệ Thống</h3>
             
-            <!-- Debug Panel & Tùy chỉnh màu nút / màu chữ -->
-            <div class="debug-panel">
-                <h4>🎨 Tùy chỉnh Giao diện & Màu chữ</h4>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px;">
-                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <span>Màu nút:</span>
-                        <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <span>Màu chữ:</span>
-                        <input type="color" id="text-color-picker" value="#f8fafc" onchange="changeTextColor(this.value)" style="cursor: pointer; border:none; width:30px; height:25px; background:none;">
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <input type="checkbox" id="rgb-btn-toggle" onclick="toggleRGBButtons(this)"> 🌈 Nút RGB
-                    </label>
+            <div style="text-align: left; display: flex; flex-direction: column; gap: 12px; font-size: 13px; background: var(--item-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                <button class="custom-btn" onclick="cycleTheme()" style="width: 100%; font-size: 13px; padding: 8px;">☀️ / 🌙 Đổi Giao Diện (Sáng/Tối/OLED)</button>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Màu nút:</span>
+                    <input type="color" id="btn-color-picker" value="#38bdf8" onchange="changeButtonColor(this.value)" style="cursor: pointer; border:none; width:40px; height:25px; background:none;">
                 </div>
-                <div class="debug-buttons">
-                    <button class="custom-btn" onclick="debugAddCoins(100)">+100 Xu</button>
-                    <button class="custom-btn" onclick="debugResetTasks()">Reset NV</button>
-                    <button class="delete-btn" onclick="resetData()" style="background:var(--danger-color); color:white; padding:5px 8px;">Xóa dữ liệu</button>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Màu chữ:</span>
+                    <input type="color" id="text-color-picker" value="#f8fafc" onchange="changeTextColor(this.value)" style="cursor: pointer; border:none; width:40px; height:25px; background:none;">
                 </div>
+
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="rgb-btn-toggle" onclick="toggleRGBButtons(this)" style="width: 16px; height: 16px;"> 🌈 Hiệu ứng Nút RGB
+                </label>
             </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="custom-btn" onclick="debugAddCoins(100)" style="flex:1; font-size: 12px; padding: 8px;">+100 Xu</button>
+                    <button class="custom-btn" onclick="debugResetTasks()" style="flex:1; font-size: 12px; padding: 8px;">Reset NV</button>
+                </div>
+                <button class="delete-btn" onclick="resetData()" style="background:var(--danger-color); color:white; padding:8px; width:100%; border-radius: 8px;">Xóa toàn bộ dữ liệu</button>
+            </div>
+
+            <button class="close-shop-btn" onclick="closeSettings()">Đóng Cài Đặt</button>
         </div>
     </div>
 
     <!-- Modal Pet Shop & Thức Ăn -->
     <div id="shop-modal" class="modal hidden">
         <div class="modal-content">
-            <!-- Thả ảnh .png hoặc click để chọn cho Pet -->
-            <div class="pet-img-box" id="drop-zone" onclick="document.getElementById('pet-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" title="Kéo thả file ảnh .png vào đây hoặc bấm để chọn">
+            <div class="pet-img-box" id="drop-zone" onclick="document.getElementById('pet-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" title="Kéo thả file ảnh vào đây hoặc bấm để chọn">
                 <img id="pet-avatar-img" src="https://i.imgur.com/8Qz462Y.png" alt="Pet Cá Sấu" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616408.png'">
             </div>
-            <input type="file" id="pet-file-input" accept=".png, image/png" style="display: none;" onchange="handlePetImageUpload(event)">
-            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Kéo thả ảnh .png vào khung hoặc bấm vào ảnh để tải lên)</div>
+            <!-- Chấp nhận mọi loại định dạng ảnh bằng image/* -->
+            <input type="file" id="pet-file-input" accept="image/*" style="display: none;" onchange="handlePetImageUpload(event)">
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">(Kéo thả bất kỳ file ảnh nào vào đây hoặc bấm để tải lên)</div>
 
             <div class="dialogue-box" id="dialogue-text">"gpz gpz gpz~ Mua thức ăn bồi bổ cho tôi mau lên!"</div>
 
-            <!-- Thống kê Cấp độ & Thanh Kinh Nghiệm Pet -->
             <div style="background: var(--item-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                     <span>🐾 Cấp độ Pet: <b id="pet-level-text" style="color: var(--accent-color);">Lv.1</b></span>
                     <span>⚡ Buff: <b id="pet-buff-text" style="color: #22c55e;">+10% xu</b></span>
                 </div>
-                <!-- Thanh tiến trình kinh nghiệm (XP) -->
                 <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; height: 10px; overflow: hidden; position: relative;">
                     <div id="pet-xp-bar" style="background: #22c55e; height: 100%; width: 0%; transition: width 0.3s;"></div>
                 </div>
@@ -344,14 +343,9 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Hàm rung thiết bị (Hỗ trợ điện thoại Android/iOS qua API chuẩn)
         function triggerVibration(pattern = 40) {
             if ("vibrate" in navigator) {
-                try {
-                    navigator.vibrate(pattern);
-                } catch (e) {
-                    // Bỏ qua nếu trình duyệt chặn
-                }
+                try { navigator.vibrate(pattern); } catch (e) {}
             }
         }
 
@@ -383,7 +377,6 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'delete') {
-                // Âm thanh trầm xuống khi xóa
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(250, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2);
@@ -449,7 +442,6 @@
         function changeButtonColor(color) {
             appData.customBtnColor = color;
             appData.rgbButtonsActive = false;
-            document.getElementById('rgb-btn-toggle').checked = false;
             saveData();
             applyButtonCustomization();
         }
@@ -493,6 +485,17 @@
             }
         }
 
+        function openSettings() {
+            triggerVibration(30);
+            playSound('bell');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            triggerVibration(20);
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
         function handleDragOver(e) {
             e.preventDefault();
             document.getElementById('drop-zone').classList.add('dragover');
@@ -507,23 +510,20 @@
             e.preventDefault();
             document.getElementById('drop-zone').classList.remove('dragover');
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processImageFile(files[0]);
-            }
+            if (files.length > 0) { processImageFile(files[0]); }
         }
 
         function handlePetImageUpload(event) {
             const file = event.target.files[0];
-            if (file) {
-                processImageFile(file);
-            }
+            if (file) { processImageFile(file); }
         }
 
         function processImageFile(file) {
-            if (file.type !== "image/png") {
+            // Kiểm tra tổng quát nếu file không thuộc dạng ảnh
+            if (!file.type.startsWith('image/')) {
                 triggerVibration([50, 50, 50]);
                 playSound('error');
-                alert("⛔ Vui lòng chỉ tải lên định dạng file .png!");
+                alert("⛔ Vui lòng chỉ tải lên file định dạng hình ảnh!");
                 return;
             }
             const reader = new FileReader();
@@ -533,7 +533,7 @@
                 updatePetDisplay();
                 triggerVibration(60);
                 playSound('buy');
-                alert("✨ Đã cập nhật ảnh Pet .png thành công!");
+                alert("✨ Đã cập nhật ảnh Pet thành công!");
             };
             reader.readAsDataURL(file);
         }
